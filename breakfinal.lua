@@ -1062,7 +1062,7 @@ unlockDoorBtn.MouseButton1Click:Connect(function()
             end
         end)
     else
-        unlockDoorBtn.Text = "UnlockDoor: OFF"
+        unlockDoorBtn.Text = "BasementSpam: OFF"
         unlockDoorBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     end
 end)
