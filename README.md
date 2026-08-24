@@ -1,3 +1,6 @@
+#Old I No supported.
+
+
 # trench-war-script
 The test kill script on trench war! Lol
 script:
