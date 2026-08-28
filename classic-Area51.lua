@@ -243,6 +243,70 @@ killOnceBtn.MouseButton1Click:Connect(function()
     killAllOnce()
 end)
 
+-- ==================== CRASHERBOOM-BOOM (EXPLOIT) ====================
+local function crasherBoomOnce()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local myPos = root.Position
+    local grenadeEvent = nil
+    
+    -- Ищем GrenadeHit в M16A2
+    local gun = char:FindFirstChild("M16A2")
+    if gun then
+        grenadeEvent = gun:FindFirstChild("GrenadeHit")
+    end
+
+    if not grenadeEvent then
+        -- Если нет M16A2, пробуем найти в бэкпаке
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in pairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "M16A2" then
+                    grenadeEvent = tool:FindFirstChild("GrenadeHit")
+                    if grenadeEvent then break end
+                end
+            end
+        end
+    end
+
+    if not grenadeEvent then return end
+
+    -- Генерируем случайные координаты в радиусе 100 studs
+    local angle = math.random() * math.pi * 2
+    local radius = math.random() * 100
+    local offsetX = math.cos(angle) * radius
+    local offsetZ = math.sin(angle) * radius
+    local offsetY = (math.random() * 80) - 40
+
+    local targetPos = Vector3.new(
+        myPos.X + offsetX,
+        myPos.Y + offsetY,
+        myPos.Z + offsetZ
+    )
+
+    pcall(function()
+        grenadeEvent:FireServer(targetPos)
+    end)
+end
+
+local crasherBoomBtn = Instance.new("TextButton")
+crasherBoomBtn.Size = UDim2.new(1, 0, 0, 32)
+crasherBoomBtn.Text = "CrasherBoom-Boom"
+crasherBoomBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+crasherBoomBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+crasherBoomBtn.Font = Enum.Font.SourceSansBold
+crasherBoomBtn.TextSize = 13
+crasherBoomBtn.BorderSizePixel = 0
+crasherBoomBtn.Parent = exploitTab
+Instance.new("UICorner", crasherBoomBtn).CornerRadius = UDim.new(0, 4)
+
+crasherBoomBtn.MouseButton1Click:Connect(function()
+    crasherBoomOnce()
+end)
+
 -- ==================== BADGES ====================
 local badgeLocations = {
     {name = "Helpful", cframe = CFrame.new(10.7580309, 768.249695, 120.934952, 0.812219799, 9.73034808e-09, 0.583351493, -9.07471787e-08, 1, 1.0967026e-07, -0.583351493, -1.4201386e-07, 0.812219799)},
