@@ -912,6 +912,121 @@ crasherBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== ALL-KILLERS-CABOOM (MISC) ====================
+local isAllKillersCaboom = false
+local allKillersConnection = nil
+
+local function getAllKillersHeads()
+    local heads = {}
+    local killers = workspace:FindFirstChild("Killers")
+    if not killers then return heads end
+
+    local monsterNames = {
+        "Eyeless Jack", "Chucky", "Captain Zombie", "Alien",
+        "Granny", "GhostFace", "Freddy Krueger", "Leatherface",
+        "Jeff", "Jason Voorhees", "Rake", "Pennywise",
+        "Mikael", "Sonic.exe", "Slenderman", "Robot"
+    }
+
+    for _, name in pairs(monsterNames) do
+        local monster = killers:FindFirstChild(name)
+        if monster then
+            local head = monster:FindFirstChild("Head")
+            if head and head:IsA("BasePart") then
+                table.insert(heads, head)
+            end
+        end
+    end
+
+    -- Добавляем 13-го ребенка
+    local child13 = killers:GetChildren()[13]
+    if child13 and child13:IsA("Model") then
+        local head = child13:FindFirstChild("Head")
+        if head and head:IsA("BasePart") then
+            table.insert(heads, head)
+        end
+    end
+
+    return heads
+end
+
+local function startAllKillersCaboom()
+    if allKillersConnection then
+        allKillersConnection:Disconnect()
+        allKillersConnection = nil
+    end
+
+    allKillersConnection = RunService.Heartbeat:Connect(function()
+        if not isAllKillersCaboom then
+            allKillersConnection:Disconnect()
+            allKillersConnection = nil
+            return
+        end
+
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        local grenadeEvent = nil
+        local gun = char:FindFirstChild("M16A2")
+        if gun then
+            grenadeEvent = gun:FindFirstChild("GrenadeHit")
+        end
+
+        if not grenadeEvent then
+            local backpack = LocalPlayer:FindFirstChild("Backpack")
+            if backpack then
+                for _, tool in pairs(backpack:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name == "M16A2" then
+                        grenadeEvent = tool:FindFirstChild("GrenadeHit")
+                        if grenadeEvent then break end
+                    end
+                end
+            end
+        end
+
+        if not grenadeEvent then return end
+
+        local heads = getAllKillersHeads()
+        if #heads == 0 then return end
+
+        for _, head in pairs(heads) do
+            pcall(function()
+                grenadeEvent:FireServer(head.Position)
+            end)
+        end
+    end)
+end
+
+local allKillersCaboomBtn = Instance.new("TextButton")
+allKillersCaboomBtn.Size = UDim2.new(1, 0, 0, 32)
+allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+allKillersCaboomBtn.Font = Enum.Font.SourceSansBold
+allKillersCaboomBtn.TextSize = 13
+allKillersCaboomBtn.BorderSizePixel = 0
+allKillersCaboomBtn.Parent = miscTab
+Instance.new("UICorner", allKillersCaboomBtn).CornerRadius = UDim.new(0, 4)
+
+allKillersCaboomBtn.MouseButton1Click:Connect(function()
+    isAllKillersCaboom = not isAllKillersCaboom
+    if isAllKillersCaboom then
+        allKillersCaboomBtn.Text = "All-Killers-Caboom ON"
+        allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        allKillersCaboomBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        startAllKillersCaboom()
+    else
+        allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+        allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        if allKillersConnection then
+            allKillersConnection:Disconnect()
+            allKillersConnection = nil
+        end
+    end
+end)
+
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
