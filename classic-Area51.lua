@@ -230,7 +230,7 @@ end
 
 local killOnceBtn = Instance.new("TextButton")
 killOnceBtn.Size = UDim2.new(1, 0, 0, 32)
-killOnceBtn.Text = "Kill All Killers"
+killOnceBtn.Text = "Kill All Basic-Killers"
 killOnceBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 killOnceBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 killOnceBtn.Font = Enum.Font.SourceSansBold
@@ -307,10 +307,33 @@ crasherBoomBtn.MouseButton1Click:Connect(function()
     crasherBoomOnce()
 end)
 
--- ==================== KILL ALL ZOMBIES (EXPLOIT) ====================
-local function killAllZombiesOnce()
+-- ==================== KILL ALL KILLERS (EXPLOIT) ====================
+local function killAllKillersOnce()
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     if not backpack then return end
+
+    -- Проверяем есть ли оружие с Hit (кроме Flashlight)
+    local hasWeapon = false
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name ~= "Flashlight" and tool:FindFirstChild("Hit") then
+            hasWeapon = true
+            break
+        end
+    end
+
+    -- Если нет оружия - телепортируемся к пистолету
+    if not hasWeapon then
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local root = char.HumanoidRootPart
+            local oldCF = root.CFrame
+            local pistolCF = CFrame.new(-64.3158493, 735.329529, 18.362793, 0.0249549318, -1.01103925e-08, 0.999688566, 4.47392262e-11, 1, 1.01124256e-08, -0.999688566, -2.07629594e-10, 0.0249549318)
+            root.CFrame = pistolCF
+            task.wait(2)
+            root.CFrame = oldCF
+            task.wait(0.3)
+        end
+    end
 
     -- Ищем любое оружие с Hit (кроме Flashlight)
     local hitEvent = nil
@@ -325,7 +348,6 @@ local function killAllZombiesOnce()
     end
 
     if not hitEvent then
-        -- Если нет оружия с Hit в бэкпаке, проверяем Character
         local char = LocalPlayer.Character
         if char then
             for _, tool in pairs(char:GetChildren()) do
@@ -345,15 +367,11 @@ local function killAllZombiesOnce()
     local killers = workspace:FindFirstChild("Killers")
     if not killers then return end
 
-    -- Перебираем от 1 до 30 (или сколько есть)
-    local zombieCount = 0
-    for i = 1, 30 do
-        local child = killers:GetChildren()[i]
-        if child and child:IsA("Model") then
+    -- Перебираем всех детей в Killers
+    for _, child in pairs(killers:GetChildren()) do
+        if child:IsA("Model") then
             local zombie = child:FindFirstChild("Zombie")
             if zombie then
-                zombieCount = zombieCount + 1
-                -- Отправляем 5 ивентов в голову
                 for j = 1, 5 do
                     pcall(function()
                         hitEvent:FireServer(zombie, "Head")
@@ -364,21 +382,20 @@ local function killAllZombiesOnce()
     end
 end
 
-local killZombiesBtn = Instance.new("TextButton")
-killZombiesBtn.Size = UDim2.new(1, 0, 0, 32)
-killZombiesBtn.Text = "Kill All Zombies"
-killZombiesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-killZombiesBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-killZombiesBtn.Font = Enum.Font.SourceSansBold
-killZombiesBtn.TextSize = 13
-killZombiesBtn.BorderSizePixel = 0
-killZombiesBtn.Parent = exploitTab
-Instance.new("UICorner", killZombiesBtn).CornerRadius = UDim.new(0, 4)
+local killAllKillersBtn = Instance.new("TextButton")
+killAllKillersBtn.Size = UDim2.new(1, 0, 0, 32)
+killAllKillersBtn.Text = "Kill All Killers"
+killAllKillersBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllKillersBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+killAllKillersBtn.Font = Enum.Font.SourceSansBold
+killAllKillersBtn.TextSize = 13
+killAllKillersBtn.BorderSizePixel = 0
+killAllKillersBtn.Parent = exploitTab
+Instance.new("UICorner", killAllKillersBtn).CornerRadius = UDim.new(0, 4)
 
-killZombiesBtn.MouseButton1Click:Connect(function()
-    killAllZombiesOnce()
+killAllKillersBtn.MouseButton1Click:Connect(function()
+    killAllKillersOnce()
 end)
-
 
 -- ==================== BADGES ====================
 local badgeLocations = {
@@ -778,7 +795,7 @@ end
 
 local killAllSpamBtn = Instance.new("TextButton")
 killAllSpamBtn.Size = UDim2.new(1, 0, 0, 32)
-killAllSpamBtn.Text = "Kill All Killers (Spam) OFF"
+killAllSpamBtn.Text = "Kill All Basic-Killers (Spam) OFF"
 killAllSpamBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
 killAllSpamBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 killAllSpamBtn.Font = Enum.Font.SourceSansBold
@@ -790,12 +807,12 @@ Instance.new("UICorner", killAllSpamBtn).CornerRadius = UDim.new(0, 4)
 killAllSpamBtn.MouseButton1Click:Connect(function()
     isKillAll = not isKillAll
     if isKillAll then
-        killAllSpamBtn.Text = "Kill All Killers (Spam) ON"
+        killAllSpamBtn.Text = "Kill All Basic-Killers (Spam) ON"
         killAllSpamBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
         killAllSpamBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         killAllThread = task.spawn(killAllLoop)
     else
-        killAllSpamBtn.Text = "Kill All Killers (Spam) OFF"
+        killAllSpamBtn.Text = "Kill All Basic-Killers (Spam) OFF"
         killAllSpamBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         killAllSpamBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
         if killAllThread then
