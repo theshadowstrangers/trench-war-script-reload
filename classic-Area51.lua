@@ -307,6 +307,79 @@ crasherBoomBtn.MouseButton1Click:Connect(function()
     crasherBoomOnce()
 end)
 
+-- ==================== KILL ALL ZOMBIES (EXPLOIT) ====================
+local function killAllZombiesOnce()
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if not backpack then return end
+
+    -- Ищем любое оружие с Hit (кроме Flashlight)
+    local hitEvent = nil
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+            local hit = tool:FindFirstChild("Hit")
+            if hit then
+                hitEvent = hit
+                break
+            end
+        end
+    end
+
+    if not hitEvent then
+        -- Если нет оружия с Hit в бэкпаке, проверяем Character
+        local char = LocalPlayer.Character
+        if char then
+            for _, tool in pairs(char:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+                    local hit = tool:FindFirstChild("Hit")
+                    if hit then
+                        hitEvent = hit
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    if not hitEvent then return end
+
+    local killers = workspace:FindFirstChild("Killers")
+    if not killers then return end
+
+    -- Перебираем от 1 до 30 (или сколько есть)
+    local zombieCount = 0
+    for i = 1, 30 do
+        local child = killers:GetChildren()[i]
+        if child and child:IsA("Model") then
+            local zombie = child:FindFirstChild("Zombie")
+            if zombie then
+                zombieCount = zombieCount + 1
+                -- Отправляем 5 ивентов в голову
+                for j = 1, 5 do
+                    pcall(function()
+                        hitEvent:FireServer(zombie, "Head")
+                    end)
+                end
+            end
+        end
+    end
+end
+
+local killZombiesBtn = Instance.new("TextButton")
+killZombiesBtn.Size = UDim2.new(1, 0, 0, 32)
+killZombiesBtn.Text = "Kill All Zombies"
+killZombiesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killZombiesBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+killZombiesBtn.Font = Enum.Font.SourceSansBold
+killZombiesBtn.TextSize = 13
+killZombiesBtn.BorderSizePixel = 0
+killZombiesBtn.Parent = exploitTab
+Instance.new("UICorner", killZombiesBtn).CornerRadius = UDim.new(0, 4)
+
+killZombiesBtn.MouseButton1Click:Connect(function()
+    killAllZombiesOnce()
+end)
+
+
 -- ==================== BADGES ====================
 local badgeLocations = {
     {name = "Helpful", cframe = CFrame.new(10.7580309, 768.249695, 120.934952, 0.812219799, 9.73034808e-09, 0.583351493, -9.07471787e-08, 1, 1.0967026e-07, -0.583351493, -1.4201386e-07, 0.812219799)},
