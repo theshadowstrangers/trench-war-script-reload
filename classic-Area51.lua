@@ -754,6 +754,100 @@ weaponsUpgradeBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== CRASHERBOOM (MISC) ====================
+local isCrasherBoom = false
+local crasherConnection = nil
+
+local function startCrasherBoom()
+    if crasherConnection then
+        crasherConnection:Disconnect()
+        crasherConnection = nil
+    end
+
+    crasherConnection = RunService.Heartbeat:Connect(function()
+        if not isCrasherBoom then
+            crasherConnection:Disconnect()
+            crasherConnection = nil
+            return
+        end
+
+        local char = LocalPlayer.Character
+        if not char then return end
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+
+        local myPos = root.Position
+        local grenadeEvent = nil
+        
+        -- Ищем GrenadeHit в M16A2
+        local gun = char:FindFirstChild("M16A2")
+        if gun then
+            grenadeEvent = gun:FindFirstChild("GrenadeHit")
+        end
+
+        if not grenadeEvent then
+            -- Если нет M16A2, пробуем найти в бэкпаке
+            local backpack = LocalPlayer:FindFirstChild("Backpack")
+            if backpack then
+                for _, tool in pairs(backpack:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name == "M16A2" then
+                        grenadeEvent = tool:FindFirstChild("GrenadeHit")
+                        if grenadeEvent then break end
+                    end
+                end
+            end
+        end
+
+        if not grenadeEvent then return end
+
+        -- Генерируем случайные координаты в радиусе 100 studs
+        local angle = math.random() * math.pi * 2
+        local radius = math.random() * 100
+        local offsetX = math.cos(angle) * radius
+        local offsetZ = math.sin(angle) * radius
+        local offsetY = (math.random() * 80) - 40 -- от -40 до +40 по Y
+
+        local targetPos = Vector3.new(
+            myPos.X + offsetX,
+            myPos.Y + offsetY,
+            myPos.Z + offsetZ
+        )
+
+        pcall(function()
+            grenadeEvent:FireServer(targetPos)
+        end)
+    end)
+end
+
+local crasherBtn = Instance.new("TextButton")
+crasherBtn.Size = UDim2.new(1, 0, 0, 32)
+crasherBtn.Text = "CrasherBoom OFF"
+crasherBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+crasherBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+crasherBtn.Font = Enum.Font.SourceSansBold
+crasherBtn.TextSize = 13
+crasherBtn.BorderSizePixel = 0
+crasherBtn.Parent = miscTab
+Instance.new("UICorner", crasherBtn).CornerRadius = UDim.new(0, 4)
+
+crasherBtn.MouseButton1Click:Connect(function()
+    isCrasherBoom = not isCrasherBoom
+    if isCrasherBoom then
+        crasherBtn.Text = "CrasherBoom ON"
+        crasherBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        crasherBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        startCrasherBoom()
+    else
+        crasherBtn.Text = "CrasherBoom OFF"
+        crasherBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        crasherBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        if crasherConnection then
+            crasherConnection:Disconnect()
+            crasherConnection = nil
+        end
+    end
+end)
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
