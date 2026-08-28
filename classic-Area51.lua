@@ -1116,6 +1116,126 @@ allKillersCaboomBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== KILL ALL KILLERS SPAM (MISC) ====================
+local isKillAllSpam = false
+local killAllSpamConnection = nil
+
+local function killAllKillersSpamLoop()
+    if killAllSpamConnection then
+        killAllSpamConnection:Disconnect()
+        killAllSpamConnection = nil
+    end
+
+    killAllSpamConnection = RunService.Heartbeat:Connect(function()
+        if not isKillAllSpam then
+            killAllSpamConnection:Disconnect()
+            killAllSpamConnection = nil
+            return
+        end
+
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if not backpack then return end
+
+        -- Проверяем есть ли оружие с Hit (кроме Flashlight)
+        local hasWeapon = false
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name ~= "Flashlight" and tool:FindFirstChild("Hit") then
+                hasWeapon = true
+                break
+            end
+        end
+
+        -- Если нет оружия - телепортируемся к пистолету
+        if not hasWeapon then
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                local root = char.HumanoidRootPart
+                local oldCF = root.CFrame
+                local pistolCF = CFrame.new(-64.3158493, 735.329529, 18.362793, 0.0249549318, -1.01103925e-08, 0.999688566, 4.47392262e-11, 1, 1.01124256e-08, -0.999688566, -2.07629594e-10, 0.0249549318)
+                root.CFrame = pistolCF
+                task.wait(2)
+                root.CFrame = oldCF
+                task.wait(0.3)
+            end
+        end
+
+        -- Ищем любое оружие с Hit (кроме Flashlight)
+        local hitEvent = nil
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+                local hit = tool:FindFirstChild("Hit")
+                if hit then
+                    hitEvent = hit
+                    break
+                end
+            end
+        end
+
+        if not hitEvent then
+            local char = LocalPlayer.Character
+            if char then
+                for _, tool in pairs(char:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+                        local hit = tool:FindFirstChild("Hit")
+                        if hit then
+                            hitEvent = hit
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        if not hitEvent then return end
+
+        local killers = workspace:FindFirstChild("Killers")
+        if not killers then return end
+
+        -- Перебираем всех детей в Killers
+        for _, child in pairs(killers:GetChildren()) do
+            if child:IsA("Model") then
+                local zombie = child:FindFirstChild("Zombie")
+                if zombie then
+                    for j = 1, 5 do
+                        pcall(function()
+                            hitEvent:FireServer(zombie, "Head")
+                        end)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local killAllKillersSpamBtn = Instance.new("TextButton")
+killAllKillersSpamBtn.Size = UDim2.new(1, 0, 0, 32)
+killAllKillersSpamBtn.Text = "Kill All Killers Spam OFF"
+killAllKillersSpamBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+killAllKillersSpamBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+killAllKillersSpamBtn.Font = Enum.Font.SourceSansBold
+killAllKillersSpamBtn.TextSize = 13
+killAllKillersSpamBtn.BorderSizePixel = 0
+killAllKillersSpamBtn.Parent = miscTab
+Instance.new("UICorner", killAllKillersSpamBtn).CornerRadius = UDim.new(0, 4)
+
+killAllKillersSpamBtn.MouseButton1Click:Connect(function()
+    isKillAllSpam = not isKillAllSpam
+    if isKillAllSpam then
+        killAllKillersSpamBtn.Text = "Kill All Killers Spam ON"
+        killAllKillersSpamBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        killAllKillersSpamBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        killAllKillersSpamLoop()
+    else
+        killAllKillersSpamBtn.Text = "Kill All Killers Spam OFF"
+        killAllKillersSpamBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        killAllKillersSpamBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        if killAllSpamConnection then
+            killAllSpamConnection:Disconnect()
+            killAllSpamConnection = nil
+        end
+    end
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
