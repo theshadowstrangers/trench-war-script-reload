@@ -1089,7 +1089,7 @@ end
 
 local allKillersCaboomBtn = Instance.new("TextButton")
 allKillersCaboomBtn.Size = UDim2.new(1, 0, 0, 32)
-allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+allKillersCaboomBtn.Text = "All-Basic-Killers-Caboom OFF"
 allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
 allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 allKillersCaboomBtn.Font = Enum.Font.SourceSansBold
@@ -1101,12 +1101,12 @@ Instance.new("UICorner", allKillersCaboomBtn).CornerRadius = UDim.new(0, 4)
 allKillersCaboomBtn.MouseButton1Click:Connect(function()
     isAllKillersCaboom = not isAllKillersCaboom
     if isAllKillersCaboom then
-        allKillersCaboomBtn.Text = "All-Killers-Caboom ON"
+        allKillersCaboomBtn.Text = "All-Basic-Killers-Caboom ON"
         allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
         allKillersCaboomBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         startAllKillersCaboom()
     else
-        allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+        allKillersCaboomBtn.Text = "All-Basic-Killers-Caboom OFF"
         allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
         allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
         if allKillersConnection then
@@ -1232,6 +1232,93 @@ killAllKillersSpamBtn.MouseButton1Click:Connect(function()
         if killAllSpamConnection then
             killAllSpamConnection:Disconnect()
             killAllSpamConnection = nil
+        end
+    end
+end)
+
+-- ==================== ALL-KILLERS-CABOOM SPAM (MISC) ====================
+local isAllKillersCaboom = false
+local allKillersCaboomConnection = nil
+
+local function getAllKillersCaboomLoop()
+    if allKillersCaboomConnection then
+        allKillersCaboomConnection:Disconnect()
+        allKillersCaboomConnection = nil
+    end
+
+    allKillersCaboomConnection = RunService.Heartbeat:Connect(function()
+        if not isAllKillersCaboom then
+            allKillersCaboomConnection:Disconnect()
+            allKillersCaboomConnection = nil
+            return
+        end
+
+        local char = LocalPlayer.Character
+        if not char then return end
+        
+        -- Ищем GrenadeHit
+        local grenadeEvent = nil
+        local gun = char:FindFirstChild("M16A2")
+        if gun then
+            grenadeEvent = gun:FindFirstChild("GrenadeHit")
+        end
+
+        if not grenadeEvent then
+            local backpack = LocalPlayer:FindFirstChild("Backpack")
+            if backpack then
+                for _, tool in pairs(backpack:GetChildren()) do
+                    if tool:IsA("Tool") and tool.Name == "M16A2" then
+                        grenadeEvent = tool:FindFirstChild("GrenadeHit")
+                        if grenadeEvent then break end
+                    end
+                end
+            end
+        end
+
+        if not grenadeEvent then return end
+
+        local killers = workspace:FindFirstChild("Killers")
+        if not killers then return end
+
+        -- Перебираем всех детей в Killers
+        for _, child in pairs(killers:GetChildren()) do
+            if child:IsA("Model") then
+                local head = child:FindFirstChild("Head")
+                if head and head:IsA("BasePart") then
+                    pcall(function()
+                        grenadeEvent:FireServer(head.Position)
+                    end)
+                end
+            end
+        end
+    end)
+end
+
+local allKillersCaboomBtn = Instance.new("TextButton")
+allKillersCaboomBtn.Size = UDim2.new(1, 0, 0, 32)
+allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+allKillersCaboomBtn.Font = Enum.Font.SourceSansBold
+allKillersCaboomBtn.TextSize = 13
+allKillersCaboomBtn.BorderSizePixel = 0
+allKillersCaboomBtn.Parent = miscTab
+Instance.new("UICorner", allKillersCaboomBtn).CornerRadius = UDim.new(0, 4)
+
+allKillersCaboomBtn.MouseButton1Click:Connect(function()
+    isAllKillersCaboom = not isAllKillersCaboom
+    if isAllKillersCaboom then
+        allKillersCaboomBtn.Text = "All-Killers-Caboom ON"
+        allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        allKillersCaboomBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        getAllKillersCaboomLoop()
+    else
+        allKillersCaboomBtn.Text = "All-Killers-Caboom OFF"
+        allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        if allKillersCaboomConnection then
+            allKillersCaboomConnection:Disconnect()
+            allKillersCaboomConnection = nil
         end
     end
 end)
