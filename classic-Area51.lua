@@ -397,6 +397,66 @@ killAllKillersBtn.MouseButton1Click:Connect(function()
     killAllKillersOnce()
 end)
 
+-- ==================== ALL-KILLERS-CABOOM (EXPLOIT) ====================
+local function allKillersCaboomOnce()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    -- Ищем GrenadeHit
+    local grenadeEvent = nil
+    local gun = char:FindFirstChild("M16A2")
+    if gun then
+        grenadeEvent = gun:FindFirstChild("GrenadeHit")
+    end
+
+    if not grenadeEvent then
+        local backpack = LocalPlayer:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in pairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "M16A2" then
+                    grenadeEvent = tool:FindFirstChild("GrenadeHit")
+                    if grenadeEvent then break end
+                end
+            end
+        end
+    end
+
+    if not grenadeEvent then return end
+
+    local killers = workspace:FindFirstChild("Killers")
+    if not killers then return end
+
+    -- Перебираем всех детей в Killers
+    for _, child in pairs(killers:GetChildren()) do
+        if child:IsA("Model") then
+            local head = child:FindFirstChild("Head")
+            if head and head:IsA("BasePart") then
+                for i = 1, 5 do
+                    pcall(function()
+                        grenadeEvent:FireServer(head.Position)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+local allKillersCaboomBtn = Instance.new("TextButton")
+allKillersCaboomBtn.Size = UDim2.new(1, 0, 0, 32)
+allKillersCaboomBtn.Text = "All-Killers-Caboom"
+allKillersCaboomBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+allKillersCaboomBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+allKillersCaboomBtn.Font = Enum.Font.SourceSansBold
+allKillersCaboomBtn.TextSize = 13
+allKillersCaboomBtn.BorderSizePixel = 0
+allKillersCaboomBtn.Parent = exploitTab
+Instance.new("UICorner", allKillersCaboomBtn).CornerRadius = UDim.new(0, 4)
+
+allKillersCaboomBtn.MouseButton1Click:Connect(function()
+    allKillersCaboomOnce()
+end)
+
+
 -- ==================== BADGES ====================
 local badgeLocations = {
     {name = "Helpful", cframe = CFrame.new(10.7580309, 768.249695, 120.934952, 0.812219799, 9.73034808e-09, 0.583351493, -9.07471787e-08, 1, 1.0967026e-07, -0.583351493, -1.4201386e-07, 0.812219799)},
@@ -652,6 +712,124 @@ RunService.Heartbeat:Connect(function()
                 bill.Distance.Text = "studs: " .. dist
             end
         end
+    end
+end)
+
+-- ==================== ESP KILLERS (ESP TAB) ====================
+local isEspKillers = false
+local espKillersHighlights = {}
+local espKillersBillboards = {}
+local espKillersConnection = nil
+
+local function clearEspKillers()
+    for _, item in pairs(espKillersHighlights) do
+        if item then item:Destroy() end
+    end
+    espKillersHighlights = {}
+    for _, bill in pairs(espKillersBillboards) do
+        if bill then bill:Destroy() end
+    end
+    espKillersBillboards = {}
+end
+
+local function updateEspKillers()
+    if not isEspKillers then
+        clearEspKillers()
+        return
+    end
+
+    local killers = workspace:FindFirstChild("Killers")
+    if not killers then return end
+
+    for _, child in pairs(killers:GetChildren()) do
+        if child:IsA("Model") then
+            local humanoid = child:FindFirstChild("Humanoid")
+            if humanoid then
+                -- Подсветка
+                local highlight = child:FindFirstChild("EspKillerHighlight")
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "EspKillerHighlight"
+                    highlight.Adornee = child
+                    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                    highlight.FillTransparency = 0.5
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    highlight.OutlineTransparency = 0
+                    highlight.Parent = child
+                    table.insert(espKillersHighlights, highlight)
+                end
+
+                -- Billboard с расстоянием
+                local rootPart = child:FindFirstChild("HumanoidRootPart") or child:FindFirstChildWhichIsA("BasePart")
+                if rootPart then
+                    local bill = rootPart:FindFirstChild("EspKillerBillboard")
+                    if not bill then
+                        bill = Instance.new("BillboardGui")
+                        bill.Name = "EspKillerBillboard"
+                        bill.Size = UDim2.new(0, 80, 0, 25)
+                        bill.StudsOffset = Vector3.new(0, 3, 0)
+                        bill.AlwaysOnTop = true
+
+                        local txt = Instance.new("TextLabel")
+                        txt.Name = "Distance"
+                        txt.Size = UDim2.new(1, 0, 1, 0)
+                        txt.BackgroundTransparency = 1
+                        txt.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        txt.TextSize = 10
+                        txt.Font = Enum.Font.SourceSansBold
+                        txt.TextStrokeTransparency = 0
+                        txt.Parent = bill
+                        bill.Parent = rootPart
+                        table.insert(espKillersBillboards, bill)
+                    end
+
+                    local localRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if localRoot and bill:FindFirstChild("Distance") then
+                        local dist = math.floor((rootPart.Position - localRoot.Position).Magnitude)
+                        bill.Distance.Text = "studs: " .. dist
+                    end
+                end
+            end
+        end
+    end
+end
+
+local espKillersBtn = Instance.new("TextButton")
+espKillersBtn.Size = UDim2.new(1, 0, 0, 32)
+espKillersBtn.Text = "Esp Killers OFF"
+espKillersBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+espKillersBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espKillersBtn.Font = Enum.Font.SourceSansBold
+espKillersBtn.TextSize = 13
+espKillersBtn.BorderSizePixel = 0
+espKillersBtn.Parent = espTab
+Instance.new("UICorner", espKillersBtn).CornerRadius = UDim.new(0, 4)
+
+espKillersBtn.MouseButton1Click:Connect(function()
+    isEspKillers = not isEspKillers
+    if isEspKillers then
+        espKillersBtn.Text = "Esp Killers ON"
+        espKillersBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        espKillersBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        if espKillersConnection then
+            espKillersConnection:Disconnect()
+            espKillersConnection = nil
+        end
+        
+        espKillersConnection = RunService.Heartbeat:Connect(function()
+            updateEspKillers()
+        end)
+    else
+        espKillersBtn.Text = "Esp Killers OFF"
+        espKillersBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        espKillersBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        if espKillersConnection then
+            espKillersConnection:Disconnect()
+            espKillersConnection = nil
+        end
+        clearEspKillers()
     end
 end)
 
