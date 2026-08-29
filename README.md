@@ -5,32 +5,32 @@
 The test kill script on trench war! Lol
 script:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/kill.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/kill.lua",
 true))()
 ```
 script 2.0:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/menu.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/menu.lua",
 true))()
 ```
 fling Gui:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/fling.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/fling.lua",
 true))()
 ```
 Teleport Gui:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/fling.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/teleport.lua",
 true))()
 ```
 Brookhaven kill Gui
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/Brookhaven.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/Brookhaven.lua",
 true))()
 ```
 backdoor-scanner:
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/backdoor.lua",
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/backdoor.lua",
 true))()
 ```
 using: get your pistol
