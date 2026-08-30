@@ -144,7 +144,7 @@ pcall(function()
             if winEvent then
                 local remote = winEvent:FindFirstChild("WinMessage - RemoteEvent")
                 if remote then
-                    firesignal(remote.OnClientEvent, "Hello i have message for you, Thanks for Using my scrip, I very Happy Lol) Ok bye Script Kiddie LLL")
+                    firesignal(remote.OnClientEvent, "Hello i have message for you, Thanks for Using my script, I very Happy Lol) Ok bye Script Kiddie LLL But, i love everyone who using my free Open source script")
                 end
             end
         end
