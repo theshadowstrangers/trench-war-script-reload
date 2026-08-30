@@ -9,7 +9,7 @@ local RightPanel = Instance.new("Frame")
 local LeftButtonContainer = Instance.new("Frame")
 local LeftButtonList = Instance.new("UIListLayout")
 
-ScreenGui.Name = "Cart-Rider"
+ScreenGui.Name = "Pozzy-cart"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
@@ -29,7 +29,7 @@ TitleLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 TitleLabel.BorderSizePixel = 0
 TitleLabel.Size = UDim2.new(0, 300, 0, 30)
 TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.Text = " Pozzy-cart"
+TitleLabel.Text = " Cart-Rider"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -119,13 +119,14 @@ end
 local infoBtn, infoTab = createTab("Info", "Info")
 local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
 local toolsBtn, toolsTab = createTab("Tools", "Tools")
+local trollBtn, trollTab = createTab("Troll", "Troll")
 
 infoTab.Visible = true
 
 -- ==================== INFO ====================
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.Text = "Cart-Rider\nBy Spynote\nCreate in 2026 year\nalltabs Exploit, Tools"
+infoLabel.Text = "Cart Rider\nBy Spynote\nCreate in 2026 year\nalltabs Exploit, Tools, Troll"
 infoLabel.TextColor3 = Color3.new(1, 1, 1)
 infoLabel.TextSize = 18
 infoLabel.Font = Enum.Font.SourceSans
@@ -565,6 +566,88 @@ carpetBtn.MouseButton1Click:Connect(function()
     local touchPart = carpet:FindFirstChild("TouchPart")
     if not touchPart then return end
     fireTouchInterest(touchPart)
+end)
+
+-- ==================== TROLL ====================
+local function cartTrollOnce()
+    -- Шаг 1: Создаем все cart (как cartAllSpawnedOnce)
+    for i = 1, 30 do
+        local child = workspace:GetChildren()[i]
+        if child then
+            local button = child:FindFirstChild("Button")
+            if button then
+                local clickDetector = button:FindFirstChild("ClickDetector")
+                if clickDetector then
+                    pcall(function()
+                        fireclickdetector(clickDetector)
+                    end)
+                end
+            end
+        end
+    end
+    
+    task.wait(0.5)
+    
+    -- Шаг 2: Делаем 30 раз Fire Up ClickDetector
+    local activeCarts = workspace:FindFirstChild("ActiveCarts")
+    if activeCarts then
+        for rep = 1, 30 do
+            for _, cart in pairs(activeCarts:GetChildren()) do
+                if cart:IsA("Model") then
+                    local buttons = cart:FindFirstChild("Buttons")
+                    if buttons then
+                        local upButton = buttons:FindFirstChild("Up")
+                        if upButton then
+                            local clickDetector = upButton:FindFirstChild("ClickDetector")
+                            if clickDetector then
+                                pcall(function()
+                                    fireclickdetector(clickDetector)
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+            task.wait(0.05)
+        end
+    end
+    
+    task.wait(0.3)
+    
+    -- Шаг 3: Включаем всем Start ClickDetector
+    if activeCarts then
+        for _, cart in pairs(activeCarts:GetChildren()) do
+            if cart:IsA("Model") then
+                local buttons = cart:FindFirstChild("Buttons")
+                if buttons then
+                    local startButton = buttons:FindFirstChild("Start")
+                    if startButton then
+                        local clickDetector = startButton:FindFirstChild("ClickDetector")
+                        if clickDetector then
+                            pcall(function()
+                                fireclickdetector(clickDetector)
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local cartTrollBtn = Instance.new("TextButton")
+cartTrollBtn.Size = UDim2.new(1, 0, 0, 32)
+cartTrollBtn.Text = "Cart-Troll-one"
+cartTrollBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+cartTrollBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 150)
+cartTrollBtn.Font = Enum.Font.SourceSansBold
+cartTrollBtn.TextSize = 13
+cartTrollBtn.BorderSizePixel = 0
+cartTrollBtn.Parent = trollTab
+Instance.new("UICorner", cartTrollBtn).CornerRadius = UDim.new(0, 4)
+
+cartTrollBtn.MouseButton1Click:Connect(function()
+    cartTrollOnce()
 end)
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
