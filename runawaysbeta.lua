@@ -682,6 +682,72 @@ trashBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Get Dumpster
+local dumpsterActive = false
+local dumpsterConnection = nil
+
+local dumpsterBtn = Instance.new("TextButton")
+dumpsterBtn.Size = UDim2.new(1, 0, 0, 32)
+dumpsterBtn.Text = "Get Dumpster OFF"
+dumpsterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dumpsterBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+dumpsterBtn.Font = Enum.Font.SourceSansBold
+dumpsterBtn.TextSize = 14
+dumpsterBtn.BorderSizePixel = 0
+dumpsterBtn.Parent = miscTab
+Instance.new("UICorner", dumpsterBtn).CornerRadius = UDim.new(0, 4)
+
+local function findDumpsters()
+    local dumpsters = {}
+    local map = workspace:FindFirstChild("Map")
+    if not map then return dumpsters end
+    
+    local descendants = map:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "Dumpster" then
+            table.insert(dumpsters, obj)
+        end
+    end
+    return dumpsters
+end
+
+local function damageDumpsters()
+    local dumpsters = findDumpsters()
+    for _, dumpster in pairs(dumpsters) do
+        pcall(function()
+            Event:FireServer("DamageToOpen", "Damage", dumpster, 10000, "melee")
+        end)
+    end
+end
+
+dumpsterBtn.MouseButton1Click:Connect(function()
+    dumpsterActive = not dumpsterActive
+    
+    if dumpsterActive then
+        dumpsterBtn.Text = "Get Dumpster ON"
+        dumpsterBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        dumpsterBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        dumpsterConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not dumpsterActive then
+                dumpsterConnection:Disconnect()
+                dumpsterConnection = nil
+                return
+            end
+            damageDumpsters()
+        end)
+    else
+        dumpsterBtn.Text = "Get Dumpster OFF"
+        dumpsterBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        dumpsterBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        if dumpsterConnection then
+            dumpsterConnection:Disconnect()
+            dumpsterConnection = nil
+        end
+    end
+end)
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
@@ -726,6 +792,11 @@ CloseButton.MouseButton1Click:Connect(function()
     if trashConnection then
         trashConnection:Disconnect()
         trashConnection = nil
+    end
+    dumpsterActive = false
+    if dumpsterConnection then
+        dumpsterConnection:Disconnect()
+        dumpsterConnection = nil
     end
     ScreenGui:Destroy()
 end)
