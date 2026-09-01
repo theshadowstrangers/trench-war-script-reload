@@ -9,7 +9,7 @@ local RightPanel = Instance.new("Frame")
 local LeftButtonContainer = Instance.new("Frame")
 local LeftButtonList = Instance.new("UIListLayout")
 
-ScreenGui.Name = "WantEd"
+ScreenGui.Name = "RunAway Beta"
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
@@ -29,7 +29,7 @@ TitleLabel.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 TitleLabel.BorderSizePixel = 0
 TitleLabel.Size = UDim2.new(0, 300, 0, 30)
 TitleLabel.Font = Enum.Font.SourceSansBold
-TitleLabel.Text = " WantEd"
+TitleLabel.Text = " RunAway Beta"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 215, 0)
 TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -127,7 +127,7 @@ infoTab.Visible = true
 -- ==================== INFO ====================
 local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 1, 0)
-infoLabel.Text = "WantEd\nBy Spynote\nCreate in 2026 year"
+infoLabel.Text = "RunAway Beta\nBy Spynote\nCreate in 2026 year"
 infoLabel.TextColor3 = Color3.new(1, 1, 1)
 infoLabel.TextSize = 18
 infoLabel.Font = Enum.Font.SourceSans
