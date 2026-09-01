@@ -429,7 +429,7 @@ grabBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== MISC ====================
--- Get Safes (обновлен: поиск по всему workspace.Map)
+-- Get Safes
 local safesActive = false
 local safesConnection = nil
 
@@ -449,7 +449,6 @@ local function findSafes()
     local map = workspace:FindFirstChild("Map")
     if not map then return safes end
     
-    -- Получаем ВСЕ объекты внутри Map (рекурсивно)
     local descendants = map:GetDescendants()
     for _, obj in pairs(descendants) do
         if obj.Name == "Safe" then
@@ -551,7 +550,7 @@ explodeAllBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Get ATM (обновлен: поиск по всему workspace.Map)
+-- Get ATM
 local atmActive = false
 local atmConnection = nil
 
@@ -571,7 +570,6 @@ local function findATMs()
     local map = workspace:FindFirstChild("Map")
     if not map then return atms end
     
-    -- Получаем ВСЕ объекты внутри Map (рекурсивно)
     local descendants = map:GetDescendants()
     for _, obj in pairs(descendants) do
         if obj.Name == "ATM" then
@@ -618,6 +616,72 @@ atmBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Get Trash (GarbageCan)
+local trashActive = false
+local trashConnection = nil
+
+local trashBtn = Instance.new("TextButton")
+trashBtn.Size = UDim2.new(1, 0, 0, 32)
+trashBtn.Text = "Get Trash OFF"
+trashBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+trashBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+trashBtn.Font = Enum.Font.SourceSansBold
+trashBtn.TextSize = 14
+trashBtn.BorderSizePixel = 0
+trashBtn.Parent = miscTab
+Instance.new("UICorner", trashBtn).CornerRadius = UDim.new(0, 4)
+
+local function findTrash()
+    local trashCans = {}
+    local map = workspace:FindFirstChild("Map")
+    if not map then return trashCans end
+    
+    local descendants = map:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "GarbageCan" then
+            table.insert(trashCans, obj)
+        end
+    end
+    return trashCans
+end
+
+local function damageTrash()
+    local trashCans = findTrash()
+    for _, can in pairs(trashCans) do
+        pcall(function()
+            Event:FireServer("DamageToOpen", "Damage", can, 1000, "melee")
+        end)
+    end
+end
+
+trashBtn.MouseButton1Click:Connect(function()
+    trashActive = not trashActive
+    
+    if trashActive then
+        trashBtn.Text = "Get Trash ON"
+        trashBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        trashBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        trashConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not trashActive then
+                trashConnection:Disconnect()
+                trashConnection = nil
+                return
+            end
+            damageTrash()
+        end)
+    else
+        trashBtn.Text = "Get Trash OFF"
+        trashBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        trashBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        if trashConnection then
+            trashConnection:Disconnect()
+            trashConnection = nil
+        end
+    end
+end)
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
@@ -657,6 +721,11 @@ CloseButton.MouseButton1Click:Connect(function()
     if atmConnection then
         atmConnection:Disconnect()
         atmConnection = nil
+    end
+    trashActive = false
+    if trashConnection then
+        trashConnection:Disconnect()
+        trashConnection = nil
     end
     ScreenGui:Destroy()
 end)
