@@ -429,7 +429,7 @@ grabBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== MISC ====================
--- Get Safes
+-- Get Safes (обновлен: поиск по всему workspace.Map)
 local safesActive = false
 local safesConnection = nil
 
@@ -446,23 +446,16 @@ Instance.new("UICorner", safesBtn).CornerRadius = UDim.new(0, 4)
 
 local function findSafes()
     local safes = {}
-    local buildings = workspace:FindFirstChild("Map")
-    if not buildings then return safes end
+    local map = workspace:FindFirstChild("Map")
+    if not map then return safes end
     
-    local function searchFolder(folder)
-        for _, child in pairs(folder:GetChildren()) do
-            if child:IsA("Folder") then
-                searchFolder(child)
-            elseif child.Name == "Furnitures" and child:IsA("Folder") then
-                local safe = child:FindFirstChild("Safe")
-                if safe then
-                    table.insert(safes, safe)
-                end
-            end
+    -- Получаем ВСЕ объекты внутри Map (рекурсивно)
+    local descendants = map:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "Safe" then
+            table.insert(safes, obj)
         end
     end
-    
-    searchFolder(buildings)
     return safes
 end
 
@@ -558,7 +551,7 @@ explodeAllBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Get ATM
+-- Get ATM (обновлен: поиск по всему workspace.Map)
 local atmActive = false
 local atmConnection = nil
 
@@ -575,27 +568,16 @@ Instance.new("UICorner", atmBtn).CornerRadius = UDim.new(0, 4)
 
 local function findATMs()
     local atms = {}
-    local buildings = workspace:FindFirstChild("Map")
-    if not buildings then return atms end
+    local map = workspace:FindFirstChild("Map")
+    if not map then return atms end
     
-    local function searchFolder(folder)
-        for _, child in pairs(folder:GetChildren()) do
-            if child:IsA("Folder") then
-                searchFolder(child)
-            elseif child.Name == "Templates" and child:IsA("Folder") then
-                for _, template in pairs(child:GetChildren()) do
-                    if template:IsA("Folder") or template:IsA("Model") then
-                        local atm = template:FindFirstChild("ATM")
-                        if atm then
-                            table.insert(atms, atm)
-                        end
-                    end
-                end
-            end
+    -- Получаем ВСЕ объекты внутри Map (рекурсивно)
+    local descendants = map:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "ATM" then
+            table.insert(atms, obj)
         end
     end
-    
-    searchFolder(buildings)
     return atms
 end
 
