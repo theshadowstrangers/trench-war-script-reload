@@ -138,6 +138,7 @@ infoLabel.Parent = infoTab
 
 -- ==================== EXPLOIT ====================
 local Event = game:GetService("ReplicatedStorage").FlowClient.ClientRunner.Event
+local FunctionEvent = game:GetService("ReplicatedStorage").FlowClient.ClientRunner.Function
 local NPCs = workspace:FindFirstChild("NPCs")
 local LocalPlayer = game:GetService("Players").LocalPlayer
 
@@ -145,29 +146,6 @@ local killAllActive = false
 local killAllConnection = nil
 local explodeAllActive = false
 local explodeAllConnection = nil
-
--- Kill All
-local killAllBtn = Instance.new("TextButton")
-killAllBtn.Size = UDim2.new(1, 0, 0, 32)
-killAllBtn.Text = "Kill All OFF"
-killAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-killAllBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-killAllBtn.Font = Enum.Font.SourceSansBold
-killAllBtn.TextSize = 14
-killAllBtn.BorderSizePixel = 0
-killAllBtn.Parent = exploitTab
-Instance.new("UICorner", killAllBtn).CornerRadius = UDim.new(0, 4)
-
-local killAllOneBtn = Instance.new("TextButton")
-killAllOneBtn.Size = UDim2.new(1, 0, 0, 32)
-killAllOneBtn.Text = "Kill All - One"
-killAllOneBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-killAllOneBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
-killAllOneBtn.Font = Enum.Font.SourceSansBold
-killAllOneBtn.TextSize = 14
-killAllOneBtn.BorderSizePixel = 0
-killAllOneBtn.Parent = exploitTab
-Instance.new("UICorner", killAllOneBtn).CornerRadius = UDim.new(0, 4)
 
 -- Explode All - One (в Exploit)
 local explodeAllOneBtn = Instance.new("TextButton")
@@ -180,50 +158,6 @@ explodeAllOneBtn.TextSize = 14
 explodeAllOneBtn.BorderSizePixel = 0
 explodeAllOneBtn.Parent = exploitTab
 Instance.new("UICorner", explodeAllOneBtn).CornerRadius = UDim.new(0, 4)
-
-local function killAllNPCs()
-    if not NPCs then return end
-    for _, npc in pairs(NPCs:GetChildren()) do
-        local humanoid = npc:FindFirstChild("Humanoid")
-        if humanoid then
-            pcall(function()
-                Event:FireServer("NPCs", "Damage", humanoid, 100)
-            end)
-        end
-    end
-end
-
-killAllBtn.MouseButton1Click:Connect(function()
-    killAllActive = not killAllActive
-
-    if killAllActive then
-        killAllBtn.Text = "Kill All ON"
-        killAllBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        killAllBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-
-        killAllConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not killAllActive then
-                killAllConnection:Disconnect()
-                killAllConnection = nil
-                return
-            end
-            killAllNPCs()
-        end)
-    else
-        killAllBtn.Text = "Kill All OFF"
-        killAllBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        killAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-        if killAllConnection then
-            killAllConnection:Disconnect()
-            killAllConnection = nil
-        end
-    end
-end)
-
-killAllOneBtn.MouseButton1Click:Connect(function()
-    killAllNPCs()
-end)
 
 local function explodeNPCs()
     if not NPCs then return end
@@ -239,6 +173,69 @@ end
 
 explodeAllOneBtn.MouseButton1Click:Connect(function()
     explodeNPCs()
+end)
+
+-- ==================== TOOLS-7-GIVE ====================
+local tools7Btn = Instance.new("TextButton")
+tools7Btn.Size = UDim2.new(1, 0, 0, 32)
+tools7Btn.Text = "tools-7-give"
+tools7Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tools7Btn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+tools7Btn.Font = Enum.Font.SourceSansBold
+tools7Btn.TextSize = 14
+tools7Btn.BorderSizePixel = 0
+tools7Btn.Parent = exploitTab
+Instance.new("UICorner", tools7Btn).CornerRadius = UDim.new(0, 4)
+
+tools7Btn.MouseButton1Click:Connect(function()
+    local loot = workspace:FindFirstChild("Loot")
+    if not loot then
+        print("Loot not found!")
+        return
+    end
+
+    local items = {}
+    for _, child in pairs(loot:GetChildren()) do
+        local handle = child:FindFirstChild("Handle")
+        if handle then
+            table.insert(items, {
+                Object = child,
+                Handle = handle
+            })
+        end
+    end
+
+    if #items == 0 then
+        print("No items with Handle found!")
+        return
+    end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local originalPos = hrp.CFrame
+    local count = math.min(7, #items)
+
+    for i = 1, count do
+        local item = items[i]
+        if item and item.Handle and item.Handle:IsA("BasePart") then
+            -- Телепортируемся к предмету
+            hrp.CFrame = item.Handle.CFrame * CFrame.new(0, 2, 0)
+            task.wait(0.2)
+            
+            -- Выполняем евент для захвата
+            pcall(function()
+                FunctionEvent:InvokeServer("Loot", "LootEquip", item.Handle)
+            end)
+            task.wait(0.2)
+        end
+    end
+
+    -- Возвращаемся обратно
+    hrp.CFrame = originalPos
+    print("✅ Захвачено " .. count .. " предметов!")
 end)
 
 -- ==================== ESP ====================
@@ -430,6 +427,73 @@ grabBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== MISC ====================
+-- Kill All (перемещён из Exploit)
+local killAllBtn = Instance.new("TextButton")
+killAllBtn.Size = UDim2.new(1, 0, 0, 32)
+killAllBtn.Text = "Kill All OFF"
+killAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+killAllBtn.Font = Enum.Font.SourceSansBold
+killAllBtn.TextSize = 14
+killAllBtn.BorderSizePixel = 0
+killAllBtn.Parent = miscTab
+Instance.new("UICorner", killAllBtn).CornerRadius = UDim.new(0, 4)
+
+local killAllOneBtn = Instance.new("TextButton")
+killAllOneBtn.Size = UDim2.new(1, 0, 0, 32)
+killAllOneBtn.Text = "Kill All - One"
+killAllOneBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllOneBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
+killAllOneBtn.Font = Enum.Font.SourceSansBold
+killAllOneBtn.TextSize = 14
+killAllOneBtn.BorderSizePixel = 0
+killAllOneBtn.Parent = miscTab
+Instance.new("UICorner", killAllOneBtn).CornerRadius = UDim.new(0, 4)
+
+local function killAllNPCs()
+    if not NPCs then return end
+    for _, npc in pairs(NPCs:GetChildren()) do
+        local humanoid = npc:FindFirstChild("Humanoid")
+        if humanoid then
+            pcall(function()
+                Event:FireServer("NPCs", "Damage", humanoid, 100)
+            end)
+        end
+    end
+end
+
+killAllBtn.MouseButton1Click:Connect(function()
+    killAllActive = not killAllActive
+
+    if killAllActive then
+        killAllBtn.Text = "Kill All ON"
+        killAllBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        killAllBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+        killAllConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not killAllActive then
+                killAllConnection:Disconnect()
+                killAllConnection = nil
+                return
+            end
+            killAllNPCs()
+        end)
+    else
+        killAllBtn.Text = "Kill All OFF"
+        killAllBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        killAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        if killAllConnection then
+            killAllConnection:Disconnect()
+            killAllConnection = nil
+        end
+    end
+end)
+
+killAllOneBtn.MouseButton1Click:Connect(function()
+    killAllNPCs()
+end)
+
 -- Get Safes
 local safesActive = false
 local safesConnection = nil
@@ -749,7 +813,73 @@ dumpsterBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== KILL AURA ====================
+-- Get CashRegister
+local cashRegActive = false
+local cashRegConnection = nil
+
+local cashRegBtn = Instance.new("TextButton")
+cashRegBtn.Size = UDim2.new(1, 0, 0, 32)
+cashRegBtn.Text = "Get CashRegister OFF"
+cashRegBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+cashRegBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+cashRegBtn.Font = Enum.Font.SourceSansBold
+cashRegBtn.TextSize = 14
+cashRegBtn.BorderSizePixel = 0
+cashRegBtn.Parent = miscTab
+Instance.new("UICorner", cashRegBtn).CornerRadius = UDim.new(0, 4)
+
+local function findCashRegisters()
+    local registers = {}
+    local map = workspace:FindFirstChild("Map")
+    if not map then return registers end
+
+    local descendants = map:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "CashRegister" then
+            table.insert(registers, obj)
+        end
+    end
+    return registers
+end
+
+local function damageCashRegisters()
+    local registers = findCashRegisters()
+    for _, reg in pairs(registers) do
+        pcall(function()
+            Event:FireServer("DamageToOpen", "Damage", reg, 10000, "melee")
+        end)
+    end
+end
+
+cashRegBtn.MouseButton1Click:Connect(function()
+    cashRegActive = not cashRegActive
+
+    if cashRegActive then
+        cashRegBtn.Text = "Get CashRegister ON"
+        cashRegBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        cashRegBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+        cashRegConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not cashRegActive then
+                cashRegConnection:Disconnect()
+                cashRegConnection = nil
+                return
+            end
+            damageCashRegisters()
+        end)
+    else
+        cashRegBtn.Text = "Get CashRegister OFF"
+        cashRegBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        cashRegBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        if cashRegConnection then
+            cashRegConnection:Disconnect()
+            cashRegConnection = nil
+        end
+    end
+end)
+
+-- Kill Aura
 local killAuraActive = false
 local killAuraConnection = nil
 
@@ -815,7 +945,7 @@ killAuraBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== AUTO CASH ====================
+-- Auto Cash
 local autoCashActive = false
 local autoCashConnection = nil
 
@@ -840,10 +970,27 @@ local function findCashObjects()
         if obj.Name == "TouchSensor" then
             local touchInterest = obj:FindFirstChild("TouchInterest")
             if touchInterest then
-                table.insert(cashObjects, {
-                    TouchInterest = touchInterest,
-                    Parent = obj.Parent -- сам объект с деньгами
-                })
+                local parent = obj.Parent
+                local moneyPart = nil
+                if parent then
+                    if parent:IsA("BasePart") then
+                        moneyPart = parent
+                    else
+                        for _, child in pairs(parent:GetChildren()) do
+                            if child:IsA("BasePart") then
+                                moneyPart = child
+                                break
+                            end
+                        end
+                    end
+                end
+                if moneyPart then
+                    table.insert(cashObjects, {
+                        TouchInterest = touchInterest,
+                        MoneyPart = moneyPart,
+                        TouchSensor = obj
+                    })
+                end
             end
         end
     end
@@ -861,16 +1008,19 @@ local function collectCash()
 
     for _, data in pairs(cashObjects) do
         local touchInterest = data.TouchInterest
-        local cashPart = data.Parent
-        if cashPart and cashPart:IsA("BasePart") then
-            -- Телепортируемся к деньгам
-            hrp.CFrame = cashPart.CFrame * CFrame.new(0, 0, 2)
-            task.wait(0.05) -- небольшая задержка, чтобы успеть коснуться
-            -- Активируем TouchInterest
-            pcall(function()
-                touchInterest:FireTouchInterest(hrp)
-            end)
-            task.wait(0.05)
+        local moneyPart = data.MoneyPart
+        
+        if moneyPart and moneyPart:IsA("BasePart") then
+            local targetCFrame = moneyPart.CFrame * CFrame.new(0, 0, 2)
+            hrp.CFrame = targetCFrame
+            task.wait(0.1)
+            for i = 1, 3 do
+                pcall(function()
+                    touchInterest:FireTouchInterest(hrp)
+                end)
+                task.wait(0.05)
+            end
+            task.wait(0.1)
         end
     end
 end
@@ -992,7 +1142,6 @@ speedBtn.MouseButton1Click:Connect(function()
         speedBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
         speedBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 
-        -- Сохраняем оригинальную скорость
         local char = LocalPlayer.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
@@ -1004,7 +1153,6 @@ speedBtn.MouseButton1Click:Connect(function()
             originalSpeed = 16
         end
 
-        -- Запускаем цикл
         playerSpeedLoop = task.spawn(function()
             while playerSpeedActive do
                 local speedValue = tonumber(speedInput.Text)
@@ -1018,7 +1166,7 @@ speedBtn.MouseButton1Click:Connect(function()
                         humanoid.WalkSpeed = speedValue
                     end
                 end
-                task.wait(0.2) -- обновляем каждые 0.2 секунды
+                task.wait(0.2)
             end
         end)
     else
@@ -1122,6 +1270,11 @@ CloseButton.MouseButton1Click:Connect(function()
     if dumpsterConnection then
         dumpsterConnection:Disconnect()
         dumpsterConnection = nil
+    end
+    cashRegActive = false
+    if cashRegConnection then
+        cashRegConnection:Disconnect()
+        cashRegConnection = nil
     end
     killAuraActive = false
     if killAuraConnection then
