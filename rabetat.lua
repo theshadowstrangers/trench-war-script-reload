@@ -139,6 +139,7 @@ infoLabel.Parent = infoTab
 -- ==================== EXPLOIT ====================
 local Event = game:GetService("ReplicatedStorage").FlowClient.ClientRunner.Event
 local NPCs = workspace:FindFirstChild("NPCs")
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 local killAllActive = false
 local killAllConnection = nil
@@ -376,7 +377,6 @@ espBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==================== GRAB-ITEM ====================
-local LocalPlayer = game:GetService("Players").LocalPlayer
 local grabContainer = Instance.new("ScrollingFrame")
 grabContainer.Size = UDim2.new(1, 0, 1, -10)
 grabContainer.Position = UDim2.new(0, 0, 0, 10)
@@ -749,6 +749,160 @@ dumpsterBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== KILL AURA ====================
+local killAuraActive = false
+local killAuraConnection = nil
+
+local killAuraBtn = Instance.new("TextButton")
+killAuraBtn.Size = UDim2.new(1, 0, 0, 32)
+killAuraBtn.Text = "Kill Aura OFF"
+killAuraBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAuraBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+killAuraBtn.Font = Enum.Font.SourceSansBold
+killAuraBtn.TextSize = 14
+killAuraBtn.BorderSizePixel = 0
+killAuraBtn.Parent = miscTab
+Instance.new("UICorner", killAuraBtn).CornerRadius = UDim.new(0, 4)
+
+local function killAuraLoop()
+    if not NPCs then return end
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    for _, npc in pairs(NPCs:GetChildren()) do
+        local npcHrp = npc:FindFirstChild("HumanoidRootPart")
+        if npcHrp then
+            local dist = (npcHrp.Position - hrp.Position).Magnitude
+            if dist <= 50 then
+                local humanoid = npc:FindFirstChild("Humanoid")
+                if humanoid then
+                    pcall(function()
+                        Event:FireServer("NPCs", "Damage", humanoid, 100)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+killAuraBtn.MouseButton1Click:Connect(function()
+    killAuraActive = not killAuraActive
+
+    if killAuraActive then
+        killAuraBtn.Text = "Kill Aura ON"
+        killAuraBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        killAuraBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+        killAuraConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not killAuraActive then
+                killAuraConnection:Disconnect()
+                killAuraConnection = nil
+                return
+            end
+            killAuraLoop()
+        end)
+    else
+        killAuraBtn.Text = "Kill Aura OFF"
+        killAuraBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        killAuraBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        if killAuraConnection then
+            killAuraConnection:Disconnect()
+            killAuraConnection = nil
+        end
+    end
+end)
+
+-- ==================== AUTO CASH ====================
+local autoCashActive = false
+local autoCashConnection = nil
+
+local autoCashBtn = Instance.new("TextButton")
+autoCashBtn.Size = UDim2.new(1, 0, 0, 32)
+autoCashBtn.Text = "Auto Cash OFF"
+autoCashBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoCashBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+autoCashBtn.Font = Enum.Font.SourceSansBold
+autoCashBtn.TextSize = 14
+autoCashBtn.BorderSizePixel = 0
+autoCashBtn.Parent = miscTab
+Instance.new("UICorner", autoCashBtn).CornerRadius = UDim.new(0, 4)
+
+local function findCashObjects()
+    local cashObjects = {}
+    local cashFolder = workspace:FindFirstChild("Cash")
+    if not cashFolder then return cashObjects end
+
+    local descendants = cashFolder:GetDescendants()
+    for _, obj in pairs(descendants) do
+        if obj.Name == "TouchSensor" then
+            local touchInterest = obj:FindFirstChild("TouchInterest")
+            if touchInterest then
+                table.insert(cashObjects, {
+                    TouchInterest = touchInterest,
+                    Parent = obj.Parent -- сам объект с деньгами
+                })
+            end
+        end
+    end
+    return cashObjects
+end
+
+local function collectCash()
+    local cashObjects = findCashObjects()
+    if #cashObjects == 0 then return end
+
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    for _, data in pairs(cashObjects) do
+        local touchInterest = data.TouchInterest
+        local cashPart = data.Parent
+        if cashPart and cashPart:IsA("BasePart") then
+            -- Телепортируемся к деньгам
+            hrp.CFrame = cashPart.CFrame * CFrame.new(0, 0, 2)
+            task.wait(0.05) -- небольшая задержка, чтобы успеть коснуться
+            -- Активируем TouchInterest
+            pcall(function()
+                touchInterest:FireTouchInterest(hrp)
+            end)
+            task.wait(0.05)
+        end
+    end
+end
+
+autoCashBtn.MouseButton1Click:Connect(function()
+    autoCashActive = not autoCashActive
+
+    if autoCashActive then
+        autoCashBtn.Text = "Auto Cash ON"
+        autoCashBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        autoCashBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+        autoCashConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not autoCashActive then
+                autoCashConnection:Disconnect()
+                autoCashConnection = nil
+                return
+            end
+            collectCash()
+        end)
+    else
+        autoCashBtn.Text = "Auto Cash OFF"
+        autoCashBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        autoCashBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        if autoCashConnection then
+            autoCashConnection:Disconnect()
+            autoCashConnection = nil
+        end
+    end
+end)
+
 -- ==================== PLAYER ====================
 local playerSpeedActive = false
 local playerSpeedLoop = nil
@@ -847,7 +1001,7 @@ speedBtn.MouseButton1Click:Connect(function()
             end
         end
         if not originalSpeed then
-            originalSpeed = 16 -- стандартная скорость
+            originalSpeed = 16
         end
 
         -- Запускаем цикл
@@ -864,7 +1018,7 @@ speedBtn.MouseButton1Click:Connect(function()
                         humanoid.WalkSpeed = speedValue
                     end
                 end
-                task.wait(0.7)
+                task.wait(0.2) -- обновляем каждые 0.2 секунды
             end
         end)
     else
@@ -872,14 +1026,12 @@ speedBtn.MouseButton1Click:Connect(function()
         speedBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         speedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-        -- Останавливаем цикл
         playerSpeedActive = false
         if playerSpeedLoop then
             coroutine.close(playerSpeedLoop)
             playerSpeedLoop = nil
         end
 
-        -- Восстанавливаем скорость
         if originalSpeed then
             local char = LocalPlayer.Character
             if char then
@@ -916,7 +1068,7 @@ teleportBtn.MouseButton1Click:Connect(function()
         local targetHRP = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
         local localHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if targetHRP and localHRP then
-            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3) -- немного в сторону, чтобы не столкнуться
+            localHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
         end
     end
 end)
@@ -971,7 +1123,16 @@ CloseButton.MouseButton1Click:Connect(function()
         dumpsterConnection:Disconnect()
         dumpsterConnection = nil
     end
-    -- Остановка скорости при закрытии
+    killAuraActive = false
+    if killAuraConnection then
+        killAuraConnection:Disconnect()
+        killAuraConnection = nil
+    end
+    autoCashActive = false
+    if autoCashConnection then
+        autoCashConnection:Disconnect()
+        autoCashConnection = nil
+    end
     playerSpeedActive = false
     if playerSpeedLoop then
         coroutine.close(playerSpeedLoop)
