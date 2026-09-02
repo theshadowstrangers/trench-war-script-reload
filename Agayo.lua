@@ -578,38 +578,46 @@ local function findPlayer(name)
 end
 
 targetingBtn.MouseButton1Click:Connect(function()
-    isTargeting = not isTargeting
-    
-    if isTargeting then
-        local target = findPlayer(trollInput.Text)
-        if target then
-            targetPlayer = target
-            targetingBtn.Text = "Targeting ON - " .. target.Name
-            targetingBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-            targetingBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-            
+    local target = findPlayer(trollInput.Text)
+
+    -- Если игрок не найден — выключаем таргет (если был включён)
+    if not target then
+        if isTargeting then
+            isTargeting = false
+            targetPlayer = nil
+            targetingBtn.Text = "Targeting OFF"
+            targetingBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+            targetingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             if spamConnection then
                 stopSpamLoop()
                 startSpamLoop()
             end
-        else
-            isTargeting = false
-            targetingBtn.Text = "Targeting OFF"
-            targetingBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            targetingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            targetPlayer = nil
         end
-    else
-        targetingBtn.Text = "Targeting OFF"
-        targetingBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        targetingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        targetPlayer = nil
-        
+        return
+    end
+
+    -- Если таргет уже включён — просто обновляем цель
+    if isTargeting then
+        targetPlayer = target
+        targetingBtn.Text = "Targeting ON - " .. target.Name
+        -- Перезапускаем цикл с новой целью
         if spamConnection then
             stopSpamLoop()
             startSpamLoop()
         end
+        return
     end
+
+    -- Включаем таргет
+    isTargeting = true
+    targetPlayer = target
+    targetingBtn.Text = "Targeting ON - " .. target.Name
+    targetingBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    targetingBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    if spamConnection then
+        stopSpamLoop()
+    end
+    startSpamLoop()
 end)
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
