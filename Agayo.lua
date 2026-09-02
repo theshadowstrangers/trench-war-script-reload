@@ -532,7 +532,7 @@ applyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== TROLL ====================
+-- ==================== TROLL (ИСПРАВЛЕННЫЙ) ====================
 local trollLabel = Instance.new("TextLabel")
 trollLabel.Size = UDim2.new(1, 0, 0, 20)
 trollLabel.Text = "Player Name:"
@@ -578,46 +578,42 @@ local function findPlayer(name)
 end
 
 targetingBtn.MouseButton1Click:Connect(function()
-    local target = findPlayer(trollInput.Text)
+    isTargeting = not isTargeting
 
-    -- Если игрок не найден — выключаем таргет (если был включён)
-    if not target then
-        if isTargeting then
+    if isTargeting then
+        local target = findPlayer(trollInput.Text)
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            targetPlayer = target
+            targetingBtn.Text = "Targeting ON - " .. target.Name
+            targetingBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+            targetingBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            
+            -- ПЕРЕЗАПУСКАЕМ ЦИКЛ, ЧТОБЫ ОН ИСПОЛЬЗОВАЛ НОВУЮ ЦЕЛЬ
+            if spamConnection then
+                stopSpamLoop()
+            end
+            startSpamLoop()
+            print("✅ Таргет на: " .. target.Name)
+        else
             isTargeting = false
-            targetPlayer = nil
             targetingBtn.Text = "Targeting OFF"
             targetingBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
             targetingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            if spamConnection then
-                stopSpamLoop()
-                startSpamLoop()
-            end
+            print("❌ Игрок не найден или без персонажа")
         end
-        return
-    end
-
-    -- Если таргет уже включён — просто обновляем цель
-    if isTargeting then
-        targetPlayer = target
-        targetingBtn.Text = "Targeting ON - " .. target.Name
-        -- Перезапускаем цикл с новой целью
+    else
+        targetPlayer = nil
+        targetingBtn.Text = "Targeting OFF"
+        targetingBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        targetingBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        -- ПЕРЕЗАПУСКАЕМ ЦИКЛ БЕЗ ТАРГЕТА
         if spamConnection then
             stopSpamLoop()
             startSpamLoop()
         end
-        return
+        print("✅ Таргет выключен")
     end
-
-    -- Включаем таргет
-    isTargeting = true
-    targetPlayer = target
-    targetingBtn.Text = "Targeting ON - " .. target.Name
-    targetingBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-    targetingBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    if spamConnection then
-        stopSpamLoop()
-    end
-    startSpamLoop()
 end)
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
