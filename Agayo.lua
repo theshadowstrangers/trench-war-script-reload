@@ -641,46 +641,52 @@ local function get2KEvent()
 end
 
 local function get2KTargetPos(player)
-    if not player or not player.Character then return nil end
-    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not player then return nil end
+    -- Ждём появления персонажа (до 2 секунд)
+    local char = player.Character
+    if not char then
+        -- Пытаемся дождаться загрузки персонажа
+        local success = task.wait(0.5)
+        char = player.Character
+        if not char then return nil end
+    end
+    
+    local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
+    
     return hrp.Position -- Vector3
 end
 
-local function get2KTargetCFrame(player)
-    if not player or not player.Character then return nil end
-    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
-    return hrp.CFrame -- CFrame
-end
-
 local function shootAllPlayers()
-    local players = Players:GetPlayers()
     local ev = get2KEvent()
     if not ev then 
-        print("❌ ShootEvent не найден у LocalPlayer")
         return 
     end
     
+    local players = Players:GetPlayers()
     for _, player in pairs(players) do
         if player ~= LocalPlayer then
             local targetPos = get2KTargetPos(player)
-            local targetCFrame = get2KTargetCFrame(player)
-            
             if targetPos then
-                -- Пробуем отправить Vector3
+                -- Основной способ: FireServer с Vector3
                 local success, err = pcall(function()
                     ev:FireServer(targetPos)
                 end)
                 
+                -- Запасной вариант: если не сработало, пробуем CFrame
                 if not success then
-                    -- Если не сработало, пробуем CFrame
-                    pcall(function()
-                        ev:FireServer(targetCFrame)
-                    end)
+                    local char = player.Character
+                    if char then
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            pcall(function()
+                                ev:FireServer(hrp.CFrame)
+                            end)
+                        end
+                    end
                 end
                 
-                -- Третий вариант: может нужен InvokeServer
+                -- Второй запасной вариант: InvokeServer
                 pcall(function()
                     ev:InvokeServer(targetPos)
                 end)
@@ -705,7 +711,6 @@ twoKKillBtn.MouseButton1Click:Connect(function()
             end
             shootAllPlayers()
         end)
-        print("✅ 2Kshoter включен")
     else
         twoKKillBtn.Text = "kill all OFF"
         twoKKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -715,7 +720,6 @@ twoKKillBtn.MouseButton1Click:Connect(function()
             twoKConnection:Disconnect()
             twoKConnection = nil
         end
-        print("✅ 2Kshoter выключен")
     end
 end)
 
