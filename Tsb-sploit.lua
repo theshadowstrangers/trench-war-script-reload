@@ -939,7 +939,7 @@ task.spawn(function()
                                     shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
                                 end
 
-                                local count = math.min(10, #shuffled)
+                                local count = math.min(5, #shuffled)
                                 for i = 1, count do
                                     if not isEvilTwinsAll then break end
                                     root.CFrame = shuffled[i].CFrame * CFrame.new(0, 0, 1.5)
