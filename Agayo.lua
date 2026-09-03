@@ -121,6 +121,7 @@ local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
 local miscBtn, miscTab = createTab("Misc", "Misc")
 local settingsBtn, settingsTab = createTab("Settings", "Settings")
 local trollBtn, trollTab = createTab("Troll", "Troll")
+local twoKBtn, twoKTab = createTab("2Kshoter", "2Kshoter")
 
 infoTab.Visible = true
 
@@ -615,6 +616,82 @@ targetingBtn.MouseButton1Click:Connect(function()
         print("✅ Таргет выключен")
     end
 end)
+
+-- ==================== 2KSHOTER ====================
+local twoKActive = false
+local twoKConnection = nil
+
+local twoKKillBtn = Instance.new("TextButton")
+twoKKillBtn.Size = UDim2.new(1, 0, 0, 32)
+twoKKillBtn.Text = "kill all OFF"
+twoKKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+twoKKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+twoKKillBtn.Font = Enum.Font.SourceSansBold
+twoKKillBtn.TextSize = 14
+twoKKillBtn.BorderSizePixel = 0
+twoKKillBtn.Parent = twoKTab
+Instance.new("UICorner", twoKKillBtn).CornerRadius = UDim.new(0, 4)
+
+local function get2KEvent(player)
+    if not player or not player.Character then return nil end
+    local char = player.Character
+    local shooter = char:FindFirstChild("2000s shooter")
+    if not shooter then return nil end
+    return shooter:FindFirstChild("ShootEvent")
+end
+
+local function get2KTargetPos(player)
+    if not player or not player.Character then return nil end
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    return hrp.Position
+end
+
+local function shootAllPlayers()
+    local players = Players:GetPlayers()
+    for _, player in pairs(players) do
+        if player ~= LocalPlayer then
+            local targetPos = get2KTargetPos(player)
+            if targetPos then
+                local ev = get2KEvent(LocalPlayer) -- событие у нашего игрока
+                if ev then
+                    pcall(function()
+                        ev:FireServer(targetPos)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+twoKKillBtn.MouseButton1Click:Connect(function()
+    twoKActive = not twoKActive
+
+    if twoKActive then
+        twoKKillBtn.Text = "kill all ON"
+        twoKKillBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        twoKKillBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+
+        twoKConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not twoKActive then
+                twoKConnection:Disconnect()
+                twoKConnection = nil
+                return
+            end
+            shootAllPlayers()
+        end)
+    else
+        twoKKillBtn.Text = "kill all OFF"
+        twoKKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        twoKKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+        if twoKConnection then
+            twoKConnection:Disconnect()
+            twoKConnection = nil
+        end
+    end
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
