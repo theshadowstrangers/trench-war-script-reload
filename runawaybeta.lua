@@ -123,7 +123,6 @@ local grabBtn, grabTab = createTab("Grab-item", "Grab-item")
 local miscBtn, miscTab = createTab("Misc", "Misc")
 local playerBtn, playerTab = createTab("Player", "Player")
 local teleportBtn, teleportTab = createTab("Teleport", "Teleport")
-local trollBtn, trollTab = createTab("Troll", "Troll")
 
 infoTab.Visible = true
 
@@ -1536,109 +1535,6 @@ tpCarBtn.MouseButton1Click:Connect(function()
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         hrp.CFrame = paint.CFrame * CFrame.new(0, 2, 5)
-    end
-end)
-
--- ==================== TROLL (ИСПРАВЛЕННЫЙ) ====================
-local trollLabel = Instance.new("TextLabel")
-trollLabel.Size = UDim2.new(1, 0, 0, 20)
-trollLabel.Text = "Player Name:"
-trollLabel.TextColor3 = Color3.new(1, 1, 1)
-trollLabel.TextSize = 14
-trollLabel.Font = Enum.Font.SourceSansBold
-trollLabel.BackgroundTransparency = 1
-trollLabel.TextXAlignment = Enum.TextXAlignment.Left
-trollLabel.Parent = trollTab
-
-local trollInput = Instance.new("TextBox")
-trollInput.Size = UDim2.new(1, 0, 0, 25)
-trollInput.PlaceholderText = "Enter name..."
-trollInput.Text = ""
-trollInput.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-trollInput.TextColor3 = Color3.new(1, 1, 1)
-trollInput.Font = Enum.Font.SourceSans
-trollInput.TextSize = 14
-trollInput.Parent = trollTab
-Instance.new("UICorner", trollInput).CornerRadius = UDim.new(0, 4)
-
-local heliKillActive = false
-local heliKillConnection = nil
-local heliTargetPlayer = nil
-
-local heliKillBtn = Instance.new("TextButton")
-heliKillBtn.Size = UDim2.new(1, 0, 0, 32)
-heliKillBtn.Text = "HeliKill OFF"
-heliKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-heliKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-heliKillBtn.Font = Enum.Font.SourceSansBold
-heliKillBtn.TextSize = 14
-heliKillBtn.BorderSizePixel = 0
-heliKillBtn.Parent = trollTab
-Instance.new("UICorner", heliKillBtn).CornerRadius = UDim.new(0, 4)
-
--- Функция поиска по части имени (регистронезависимо)
-local function findPlayerHeli(name)
-    if name == "" then return nil end
-    name = name:lower() -- приводим к нижнему регистру для поиска
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= LocalPlayer then
-            -- Ищем по Name или DisplayName, содержащим введенную часть
-            if v.Name:lower():find(name) or (v.DisplayName and v.DisplayName:lower():find(name)) then
-                return v
-            end
-        end
-    end
-    return nil
-end
-
-heliKillBtn.MouseButton1Click:Connect(function()
-    heliKillActive = not heliKillActive
-
-    if heliKillActive then
-        local target = findPlayerHeli(trollInput.Text)
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            heliTargetPlayer = target
-            heliKillBtn.Text = "HeliKill ON - " .. target.Name
-            heliKillBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-            heliKillBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-            
-            heliKillConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                if not heliKillActive then
-                    heliKillConnection:Disconnect()
-                    heliKillConnection = nil
-                    return
-                end
-                
-                if not heliTargetPlayer or not heliTargetPlayer.Character then
-                    return
-                end
-                
-                local targetHrp = heliTargetPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if targetHrp then
-                    pcall(function()
-                        Event:FireServer("PoliceHeli", "Helishot", targetHrp.Position)
-                    end)
-                end
-            end)
-            print("✅ HeliKill на: " .. target.Name)
-        else
-            heliKillActive = false
-            heliKillBtn.Text = "HeliKill OFF"
-            heliKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-            heliKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            print("❌ Игрок не найден или без персонажа")
-        end
-    else
-        heliTargetPlayer = nil
-        heliKillBtn.Text = "HeliKill OFF"
-        heliKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        heliKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        
-        if heliKillConnection then
-            heliKillConnection:Disconnect()
-            heliKillConnection = nil
-        end
-        print("✅ HeliKill выключен")
     end
 end)
 
