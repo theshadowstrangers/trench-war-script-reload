@@ -1539,7 +1539,7 @@ tpCarBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== TROLL ====================
+-- ==================== TROLL (ИСПРАВЛЕННЫЙ) ====================
 local trollLabel = Instance.new("TextLabel")
 trollLabel.Size = UDim2.new(1, 0, 0, 20)
 trollLabel.Text = "Player Name:"
@@ -1576,11 +1576,14 @@ heliKillBtn.BorderSizePixel = 0
 heliKillBtn.Parent = trollTab
 Instance.new("UICorner", heliKillBtn).CornerRadius = UDim.new(0, 4)
 
+-- Функция поиска по части имени (регистронезависимо)
 local function findPlayerHeli(name)
     if name == "" then return nil end
+    name = name:lower() -- приводим к нижнему регистру для поиска
     for _, v in pairs(Players:GetPlayers()) do
         if v ~= LocalPlayer then
-            if string.lower(v.Name):sub(1, #name) == string.lower(name) or (v.DisplayName and string.lower(v.DisplayName):sub(1, #name) == string.lower(name)) then
+            -- Ищем по Name или DisplayName, содержащим введенную часть
+            if v.Name:lower():find(name) or (v.DisplayName and v.DisplayName:lower():find(name)) then
                 return v
             end
         end
