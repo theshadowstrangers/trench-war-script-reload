@@ -456,6 +456,76 @@ allKillersCaboomBtn.MouseButton1Click:Connect(function()
     allKillersCaboomOnce()
 end)
 
+-- ==================== OPEN/CLOSE ALL DOORS (EXPLOIT) ====================
+local function findAndFireClickDetectors(detectorName)
+    local doors = workspace:FindFirstChild("AREA51")
+    if not doors then
+        warn("Папка AREA51 не найдена!")
+        return
+    end
+    
+    doors = doors:FindFirstChild("Doors")
+    if not doors then
+        warn("Папка Doors не найдена в AREA51!")
+        return
+    end
+    
+    local count = 0
+    -- Рекурсивный обход всех объектов в папке Doors
+    local function scanFolder(folder)
+        for _, child in pairs(folder:GetChildren()) do
+            -- Ищем ClickDetector с нужным именем
+            local detector = child:FindFirstChild(detectorName)
+            if detector and detector:IsA("ClickDetector") then
+                -- Выполняем FireClickDetector (функция экзекьютора)
+                pcall(function()
+                    fireclickdetector(detector, 0)
+                    count = count + 1
+                end)
+            end
+            -- Если это папка или модель, заходим внутрь
+            if child:IsA("Folder") or child:IsA("Model") then
+                scanFolder(child)
+            end
+        end
+    end
+    
+    scanFolder(doors)
+    print("✅ Выполнено " .. detectorName .. " для " .. count .. " дверей!")
+end
+
+-- Кнопка открытия
+local openAllDoorBtn = Instance.new("TextButton")
+openAllDoorBtn.Size = UDim2.new(1, 0, 0, 32)
+openAllDoorBtn.Text = "Open-All-Door"
+openAllDoorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+openAllDoorBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+openAllDoorBtn.Font = Enum.Font.SourceSansBold
+openAllDoorBtn.TextSize = 13
+openAllDoorBtn.BorderSizePixel = 0
+openAllDoorBtn.Parent = exploitTab
+Instance.new("UICorner", openAllDoorBtn).CornerRadius = UDim.new(0, 4)
+
+openAllDoorBtn.MouseButton1Click:Connect(function()
+    findAndFireClickDetectors("Open")
+end)
+
+-- Кнопка закрытия
+local closeAllDoorBtn = Instance.new("TextButton")
+closeAllDoorBtn.Size = UDim2.new(1, 0, 0, 32)
+closeAllDoorBtn.Text = "Close-all-Door"
+closeAllDoorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeAllDoorBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
+closeAllDoorBtn.Font = Enum.Font.SourceSansBold
+closeAllDoorBtn.TextSize = 13
+closeAllDoorBtn.BorderSizePixel = 0
+closeAllDoorBtn.Parent = exploitTab
+Instance.new("UICorner", closeAllDoorBtn).CornerRadius = UDim.new(0, 4)
+
+closeAllDoorBtn.MouseButton1Click:Connect(function()
+    findAndFireClickDetectors("Close")
+end)
+
 
 -- ==================== BADGES ====================
 local badgeLocations = {
