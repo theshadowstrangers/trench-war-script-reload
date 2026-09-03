@@ -617,7 +617,7 @@ targetingBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== 2KSHOTER ====================
+-- ==================== 2KSHOTER (ИСПРАВЛЕННЫЙ) ====================
 local twoKActive = false
 local twoKConnection = nil
 
@@ -632,9 +632,9 @@ twoKKillBtn.BorderSizePixel = 0
 twoKKillBtn.Parent = twoKTab
 Instance.new("UICorner", twoKKillBtn).CornerRadius = UDim.new(0, 4)
 
-local function get2KEvent(player)
-    if not player or not player.Character then return nil end
-    local char = player.Character
+local function get2KEvent()
+    local char = LocalPlayer.Character
+    if not char then return nil end
     local shooter = char:FindFirstChild("2000s shooter")
     if not shooter then return nil end
     return shooter:FindFirstChild("ShootEvent")
@@ -644,21 +644,46 @@ local function get2KTargetPos(player)
     if not player or not player.Character then return nil end
     local hrp = player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
-    return hrp.Position
+    return hrp.Position -- Vector3
+end
+
+local function get2KTargetCFrame(player)
+    if not player or not player.Character then return nil end
+    local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    return hrp.CFrame -- CFrame
 end
 
 local function shootAllPlayers()
     local players = Players:GetPlayers()
+    local ev = get2KEvent()
+    if not ev then 
+        print("❌ ShootEvent не найден у LocalPlayer")
+        return 
+    end
+    
     for _, player in pairs(players) do
         if player ~= LocalPlayer then
             local targetPos = get2KTargetPos(player)
+            local targetCFrame = get2KTargetCFrame(player)
+            
             if targetPos then
-                local ev = get2KEvent(LocalPlayer) -- событие у нашего игрока
-                if ev then
+                -- Пробуем отправить Vector3
+                local success, err = pcall(function()
+                    ev:FireServer(targetPos)
+                end)
+                
+                if not success then
+                    -- Если не сработало, пробуем CFrame
                     pcall(function()
-                        ev:FireServer(targetPos)
+                        ev:FireServer(targetCFrame)
                     end)
                 end
+                
+                -- Третий вариант: может нужен InvokeServer
+                pcall(function()
+                    ev:InvokeServer(targetPos)
+                end)
             end
         end
     end
@@ -680,6 +705,7 @@ twoKKillBtn.MouseButton1Click:Connect(function()
             end
             shootAllPlayers()
         end)
+        print("✅ 2Kshoter включен")
     else
         twoKKillBtn.Text = "kill all OFF"
         twoKKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
@@ -689,9 +715,9 @@ twoKKillBtn.MouseButton1Click:Connect(function()
             twoKConnection:Disconnect()
             twoKConnection = nil
         end
+        print("✅ 2Kshoter выключен")
     end
 end)
-
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
