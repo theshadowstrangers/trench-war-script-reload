@@ -456,32 +456,75 @@ allKillersCaboomBtn.MouseButton1Click:Connect(function()
     allKillersCaboomOnce()
 end)
 
--- ==================== OPEN/CLOSE ALL DOORS (EXPLOIT) ====================
+-- ==================== OPEN/CLOSE ALL DOORS (FIXED) ====================
 local function findAndFireClickDetectors(detectorName)
-    local doors = workspace:FindFirstChild("AREA51")
-    if not doors then
-        warn("Папка AREA51 не найдена!")
+    -- Ищем папку AREA51 в самом воркспейсе или внутри других папок для надежности
+    local area51 = workspace:FindFirstChild("AREA51") or workspace:FindFirstChild("Area51")
+    
+    if not area51 then
+        -- Если не нашли по прямому пути, пробуем найти глобально среди всех объектов
+        area51 = workspace:FindFirstChild("AREA51", true)
+    end
+    
+    if not area51 then
+        warn("❌ Ошибка: Папка AREA51 вообще не найдена в Workspace!")
         return
     end
     
-    doors = doors:FindFirstChild("Doors")
+    -- Ищем папку с дверями
+    local doors = area51:FindFirstChild("Doors") or area51:FindFirstChild("doors")
     if not doors then
-        warn("Папка Doors не найдена в AREA51!")
+        -- На всякий случай ищем рекурсивно, если структура папок изменилась
+        doors = area51:FindFirstChild("Doors", true)
+    end
+    
+    if not doors then
+        warn("❌ Ошибка: Папка Doors не найдена внутри AREA51!")
         return
     end
     
     local count = 0
-    -- Рекурсивно перебираем ВСЕ объекты в папке Doors и её подпапках
+    -- Перебираем ВСЕ потомки в папке Doors
     for _, child in pairs(doors:GetDescendants()) do
-        if child.Name == detectorName and child:IsA("ClickDetector") then
-            pcall(function()
-                fireclickdetector(child, 0)
-                count = count + 1
+        -- Проверяем имя (без учета регистра) и тип объекта
+        if (child.Name:lower() == detectorName:lower()) and child:IsA("ClickDetector") then
+            local success, err = pcall(function()
+                -- Для эксплоитов используется fireclickdetector
+                if fireclickdetector then
+                    fireclickdetector(child, 0)
+                    count = count + 1
+                else
+                    warn("❌ Твой эксплоит (инжектор) не поддерживает функцию fireclickdetector!")
+                end
             end)
+            if not success then
+                warn("Ошибка при клике: " .. tostring(err))
+            end
         end
     end
     
-    print("✅ Выполнено " .. detectorName .. " для " .. count .. " дверей!")
+    print("✅ Выполнено действие [" .. detectorName .. "] для " .. count .. " дверей!")
+end
+
+-- Создаем GUI элемент для теста, если exploitTab не был определен заранее
+local CoreGui = game:GetService("CoreGui")
+local screenGui = CoreGui:FindFirstChild("DoorExploitGUI")
+if not screenGui then
+    screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "DoorExploitGUI"
+    screenGui.Parent = CoreGui
+end
+
+-- Временный фрейм, если у тебя нет своего exploitTab
+local targetTab = (typeof(exploitTab) == "Instance") and exploitTab or Instance.new("Frame")
+if targetTab:IsA("Frame") and not targetTab.Parent then
+    targetTab.Size = UDim2.new(0, 200, 0, 100)
+    targetTab.Position = UDim2.new(0.5, -100, 0.5, -50)
+    targetTab.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    targetTab.Parent = screenGui
+    
+    local layout = Instance.new("UIListLayout", targetTab)
+    layout.Padding = UDim.new(0, 5)
 end
 
 -- Кнопка открытия
@@ -493,7 +536,7 @@ openAllDoorBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
 openAllDoorBtn.Font = Enum.Font.SourceSansBold
 openAllDoorBtn.TextSize = 13
 openAllDoorBtn.BorderSizePixel = 0
-openAllDoorBtn.Parent = exploitTab
+openAllDoorBtn.Parent = targetTab
 Instance.new("UICorner", openAllDoorBtn).CornerRadius = UDim.new(0, 4)
 
 openAllDoorBtn.MouseButton1Click:Connect(function()
@@ -509,7 +552,7 @@ closeAllDoorBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
 closeAllDoorBtn.Font = Enum.Font.SourceSansBold
 closeAllDoorBtn.TextSize = 13
 closeAllDoorBtn.BorderSizePixel = 0
-closeAllDoorBtn.Parent = exploitTab
+closeAllDoorBtn.Parent = targetTab
 Instance.new("UICorner", closeAllDoorBtn).CornerRadius = UDim.new(0, 4)
 
 closeAllDoorBtn.MouseButton1Click:Connect(function()
