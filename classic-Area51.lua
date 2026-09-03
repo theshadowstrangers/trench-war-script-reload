@@ -471,26 +471,16 @@ local function findAndFireClickDetectors(detectorName)
     end
     
     local count = 0
-    -- Рекурсивный обход всех объектов в папке Doors
-    local function scanFolder(folder)
-        for _, child in pairs(folder:GetChildren()) do
-            -- Ищем ClickDetector с нужным именем
-            local detector = child:FindFirstChild(detectorName)
-            if detector and detector:IsA("ClickDetector") then
-                -- Выполняем FireClickDetector (функция экзекьютора)
-                pcall(function()
-                    fireclickdetector(detector, 0)
-                    count = count + 1
-                end)
-            end
-            -- Если это папка или модель, заходим внутрь
-            if child:IsA("Folder") or child:IsA("Model") then
-                scanFolder(child)
-            end
+    -- Рекурсивно перебираем ВСЕ объекты в папке Doors и её подпапках
+    for _, child in pairs(doors:GetDescendants()) do
+        if child.Name == detectorName and child:IsA("ClickDetector") then
+            pcall(function()
+                fireclickdetector(child, 0)
+                count = count + 1
+            end)
         end
     end
     
-    scanFolder(doors)
     print("✅ Выполнено " .. detectorName .. " для " .. count .. " дверей!")
 end
 
@@ -525,7 +515,6 @@ Instance.new("UICorner", closeAllDoorBtn).CornerRadius = UDim.new(0, 4)
 closeAllDoorBtn.MouseButton1Click:Connect(function()
     findAndFireClickDetectors("Close")
 end)
-
 
 -- ==================== BADGES ====================
 local badgeLocations = {
