@@ -456,108 +456,91 @@ allKillersCaboomBtn.MouseButton1Click:Connect(function()
     allKillersCaboomOnce()
 end)
 
--- ==================== OPEN/CLOSE ALL DOORS (FIXED) ====================
-local function findAndFireClickDetectors(detectorName)
-    -- Ищем папку AREA51 в самом воркспейсе или внутри других папок для надежности
-    local area51 = workspace:FindFirstChild("AREA51") or workspace:FindFirstChild("Area51")
-    
-    if not area51 then
-        -- Если не нашли по прямому пути, пробуем найти глобально среди всех объектов
-        area51 = workspace:FindFirstChild("AREA51", true)
-    end
-    
-    if not area51 then
-        warn("❌ Ошибка: Папка AREA51 вообще не найдена в Workspace!")
-        return
-    end
-    
-    -- Ищем папку с дверями
-    local doors = area51:FindFirstChild("Doors") or area51:FindFirstChild("doors")
-    if not doors then
-        -- На всякий случай ищем рекурсивно, если структура папок изменилась
-        doors = area51:FindFirstChild("Doors", true)
-    end
-    
-    if not doors then
-        warn("❌ Ошибка: Папка Doors не найдена внутри AREA51!")
-        return
-    end
-    
+-- ==================== TOTAL SCAN EXPLOIT ====================
+local function fireAllDetectors(actionType)
     local count = 0
-    -- Перебираем ВСЕ потомки в папке Doors
-    for _, child in pairs(doors:GetDescendants()) do
-        -- Проверяем имя (без учета регистра) и тип объекта
-        if (child.Name:lower() == detectorName:lower()) and child:IsA("ClickDetector") then
-            local success, err = pcall(function()
-                -- Для эксплоитов используется fireclickdetector
-                if fireclickdetector then
+    
+    -- Проверяем, поддерживает ли инжектор функцию клика
+    if not fireclickdetector then
+        warn("❌ Ошибка: Твой чит/эксплоит вообще не поддерживает функцию fireclickdetector!")
+        return
+    end
+
+    -- Сканируем абсолютно ВЕСЬ Workspace сверху донизу
+    for _, child in pairs(workspace:GetDescendants()) do
+        if child:IsA("ClickDetector") then
+            local nameLower = child.Name:lower()
+            
+            -- Проверяем, содержит ли имя триггера нужную команду (Open или Close)
+            if nameLower:find(actionType:lower()) then
+                local success, err = pcall(function()
                     fireclickdetector(child, 0)
                     count = count + 1
-                else
-                    warn("❌ Твой эксплоит (инжектор) не поддерживает функцию fireclickdetector!")
+                end)
+                if not success then
+                    warn("⚠️ Не удалось кликнуть по: " .. child:GetFullName() .. " | Ошибка: " .. tostring(err))
                 end
-            end)
-            if not success then
-                warn("Ошибка при клике: " .. tostring(err))
             end
         end
     end
     
-    print("✅ Выполнено действие [" .. detectorName .. "] для " .. count .. " дверей!")
+    print("✅ Успешно прожато триггеров [" .. actionType .. "]: " .. count)
 end
 
--- Создаем GUI элемент для теста, если exploitTab не был определен заранее
+-- Создаем интерфейс в CoreGui, чтобы кнопки точно появились на экране
 local CoreGui = game:GetService("CoreGui")
-local screenGui = CoreGui:FindFirstChild("DoorExploitGUI")
-if not screenGui then
-    screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "DoorExploitGUI"
-    screenGui.Parent = CoreGui
-end
+local screenGui = CoreGui:FindFirstChild("UniversalDoorExploit")
+if screenGui then screenGui:Destroy() end -- Удаляем старый, если был
 
--- Временный фрейм, если у тебя нет своего exploitTab
-local targetTab = (typeof(exploitTab) == "Instance") and exploitTab or Instance.new("Frame")
-if targetTab:IsA("Frame") and not targetTab.Parent then
-    targetTab.Size = UDim2.new(0, 200, 0, 100)
-    targetTab.Position = UDim2.new(0.5, -100, 0.5, -50)
-    targetTab.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    targetTab.Parent = screenGui
-    
-    local layout = Instance.new("UIListLayout", targetTab)
-    layout.Padding = UDim.new(0, 5)
-end
+screenGui = Instance.new("ScreenGui")
+screenGui.Name = "UniversalDoorExploit"
+screenGui.Parent = CoreGui
 
--- Кнопка открытия
-local openAllDoorBtn = Instance.new("TextButton")
-openAllDoorBtn.Size = UDim2.new(1, 0, 0, 32)
-openAllDoorBtn.Text = "Open-All-Door"
-openAllDoorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-openAllDoorBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
-openAllDoorBtn.Font = Enum.Font.SourceSansBold
-openAllDoorBtn.TextSize = 13
-openAllDoorBtn.BorderSizePixel = 0
-openAllDoorBtn.Parent = targetTab
-Instance.new("UICorner", openAllDoorBtn).CornerRadius = UDim.new(0, 4)
+-- Создаем небольшое меню для кнопок
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 180, 0, 80)
+mainFrame.Position = UDim2.new(0.05, 0, 0.4, 0) -- Слева на экране
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Active = true
+mainFrame.Draggable = true -- Можно перетаскивать мышкой
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 6)
 
-openAllDoorBtn.MouseButton1Click:Connect(function()
-    findAndFireClickDetectors("Open")
+local layout = Instance.new("UIListLayout", mainFrame)
+layout.Padding = UDim.new(0, 6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+-- Кнопка Открыть Все
+local openBtn = Instance.new("TextButton")
+openBtn.Size = UDim2.new(0, 160, 0, 30)
+openBtn.Text = "OPEN ALL DOORS"
+openBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+openBtn.BackgroundColor3 = Color3.fromRGB(40, 140, 200)
+openBtn.Font = Enum.Font.SourceSansBold
+openBtn.TextSize = 14
+openBtn.Parent = mainFrame
+Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 4)
+
+openBtn.MouseButton1Click:Connect(function()
+    fireAllDetectors("Open")
 end)
 
--- Кнопка закрытия
-local closeAllDoorBtn = Instance.new("TextButton")
-closeAllDoorBtn.Size = UDim2.new(1, 0, 0, 32)
-closeAllDoorBtn.Text = "Close-all-Door"
-closeAllDoorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeAllDoorBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
-closeAllDoorBtn.Font = Enum.Font.SourceSansBold
-closeAllDoorBtn.TextSize = 13
-closeAllDoorBtn.BorderSizePixel = 0
-closeAllDoorBtn.Parent = targetTab
-Instance.new("UICorner", closeAllDoorBtn).CornerRadius = UDim.new(0, 4)
+-- Кнопка Закрыть Все
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 160, 0, 30)
+closeBtn.Text = "CLOSE ALL DOORS"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 40)
+closeBtn.Font = Enum.Font.SourceSansBold
+closeBtn.TextSize = 14
+closeBtn.Parent = mainFrame
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
 
-closeAllDoorBtn.MouseButton1Click:Connect(function()
-    findAndFireClickDetectors("Close")
+closeBtn.MouseButton1Click:Connect(function()
+    fireAllDetectors("Close")
 end)
+
 
 -- ==================== BADGES ====================
 local badgeLocations = {
