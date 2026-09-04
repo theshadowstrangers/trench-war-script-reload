@@ -490,6 +490,108 @@ cosBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== X-TOOLS (ВПЕРЕД ОТ ЛИЦА) ====================
+local xToolsActive = false
+local xToolsConnection = nil
+
+local xToolsBtn = Instance.new("TextButton")
+xToolsBtn.Size = UDim2.new(1, 0, 0, 32)
+xToolsBtn.Text = "x-tools OFF"
+xToolsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+xToolsBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+xToolsBtn.Font = Enum.Font.SourceSansBold
+xToolsBtn.TextSize = 14
+xToolsBtn.BorderSizePixel = 0
+xToolsBtn.Parent = miscTab
+Instance.new("UICorner", xToolsBtn).CornerRadius = UDim.new(0, 4)
+
+-- Функция для получения позиции строго впереди игрока
+local function getForwardPosition(radius)
+    local char = LocalPlayer.Character
+    if not char then return Vector3.new(0,0,0) end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return Vector3.new(0,0,0) end
+    
+    -- Получаем направление взгляда игрока (вперёд)
+    local forward = hrp.CFrame.LookVector
+    -- Обнуляем вертикальную составляющую, чтобы не улетать вверх/вниз
+    forward = Vector3.new(forward.X, 0, forward.Z).Unit
+    
+    -- Получаем позицию игрока
+    local origin = hrp.Position
+    
+    -- Добавляем небольшое смещение вперёд (чтобы не спамить в себя)
+    local offset = math.random(1, radius)
+    
+    return origin + (forward * offset) + Vector3.new(0, 0.5, 0)
+end
+
+local function xToolsLoop()
+    for eventKey, active in pairs(activeSpammers) do
+        if active then
+            local eventFunc = events[eventKey]
+            if eventFunc then
+                local ev = eventFunc()
+                if ev then
+                    local pos
+                    if isTargeting and targetPlayer then
+                        pos = getTargetPosition(targetPlayer, settingsRadius)
+                    else
+                        pos = getForwardPosition(settingsRadius)
+                    end
+                    pcall(function()
+                        ev:FireServer(pos)
+                    end)
+                end
+            end
+        end
+    end
+end
+
+xToolsBtn.MouseButton1Click:Connect(function()
+    xToolsActive = not xToolsActive
+
+    if xToolsActive then
+        xToolsBtn.Text = "x-tools ON"
+        xToolsBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        xToolsBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        -- Отключаем старый цикл, если был
+        if spamConnection then
+            spamConnection:Disconnect()
+            spamConnection = nil
+        end
+        
+        -- Создаём новый цикл с x-tools
+        spamConnection = RunService.Heartbeat:Connect(function()
+            if not xToolsActive then
+                spamConnection:Disconnect()
+                spamConnection = nil
+                return
+            end
+            xToolsLoop()
+        end)
+    else
+        xToolsBtn.Text = "x-tools OFF"
+        xToolsBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        xToolsBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        
+        if spamConnection then
+            spamConnection:Disconnect()
+            spamConnection = nil
+        end
+        
+        -- Возвращаем обычный спам, если есть активные евенты
+        local anyActive = false
+        for _, v in pairs(activeSpammers) do
+            if v then anyActive = true; break end
+        end
+        if anyActive then
+            startSpamLoop()
+        end
+    end
+end)
+
 -- ==================== SETTINGS ====================
 local settingsLabel = Instance.new("TextLabel")
 settingsLabel.Size = UDim2.new(1, 0, 0, 25)
