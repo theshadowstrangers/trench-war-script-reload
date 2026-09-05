@@ -881,7 +881,7 @@ espPlayersBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== HITBOX-ALL ====================
+-- ==================== HITBOX-ALL (КВАДРАТНЫЙ 90x90x90) ====================
 local hitboxActive = false
 local hitboxConnection = nil
 
@@ -910,28 +910,22 @@ local function getPlayerParts(plr)
     return parts
 end
 
-local function increaseHitbox(plr)
+local function setSquareHitbox(plr)
     if not plr or not plr.Character then return end
     local parts = getPlayerParts(plr)
     for _, part in pairs(parts) do
         if part and part:IsA("BasePart") then
-            local currentSize = part.Size
-            local newSize = currentSize * 0.6 -- увеличиваем на 90%
-            part.Size = newSize
+            part.Size = Vector3.new(90, 90, 90) -- квадратный 90x90x90
         end
     end
 end
 
-local function resetHitbox(plr)
+local function resetSquareHitbox(plr)
     if not plr or not plr.Character then return end
     local parts = getPlayerParts(plr)
     for _, part in pairs(parts) do
         if part and part:IsA("BasePart") then
-            -- Возвращаем стандартный размер (1, 2, 2 для HumanoidRootPart и т.д.)
-            -- Просто делим на 1.9
-            local currentSize = part.Size
-            local newSize = currentSize / 0.6
-            part.Size = newSize
+            part.Size = Vector3.new(1, 1, 1) -- стандартный размер
         end
     end
 end
@@ -939,7 +933,7 @@ end
 local function updateHitboxes()
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
-            increaseHitbox(plr)
+            setSquareHitbox(plr)
         end
     end
 end
@@ -952,10 +946,8 @@ hitboxBtn.MouseButton1Click:Connect(function()
         hitboxBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
         hitboxBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         
-        -- Применяем ко всем игрокам
         updateHitboxes()
         
-        -- Запускаем цикл для постоянного обновления
         hitboxConnection = RunService.Heartbeat:Connect(function()
             if not hitboxActive then
                 hitboxConnection:Disconnect()
@@ -974,33 +966,13 @@ hitboxBtn.MouseButton1Click:Connect(function()
             hitboxConnection = nil
         end
         
-        -- Возвращаем стандартные размеры
         for _, plr in pairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer then
-                resetHitbox(plr)
+                resetSquareHitbox(plr)
             end
         end
     end
 end)
-
--- Очищаем при выходе
-local oldClose = CloseButton.MouseButton1Click
-CloseButton.MouseButton1Click:Connect(function()
-    espPlayersActive = false
-    clearEspPlayers()
-    hitboxActive = false
-    if hitboxConnection then
-        hitboxConnection:Disconnect()
-        hitboxConnection = nil
-    end
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            resetHitbox(plr)
-        end
-    end
-    ScreenGui:Destroy()
-end)
-
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
