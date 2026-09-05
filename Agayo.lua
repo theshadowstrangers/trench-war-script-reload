@@ -650,73 +650,64 @@ cartBtn.MouseButton1Click:Connect(function()
     game:GetService("ReplicatedStorage").SpawnCartEvent:FireServer()
 end)
 
--- ==================== BURGER-ALL ====================
-local burgerActive = false
-local burgerConnection = nil
+-- ==================== GIVE BADGES (MISC) ====================
+local badgesBtn = Instance.new("TextButton")
+badgesBtn.Size = UDim2.new(1, 0, 0, 32)
+badgesBtn.Text = "Give Badges"
+badgesBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+badgesBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
+badgesBtn.Font = Enum.Font.SourceSansBold
+badgesBtn.TextSize = 13
+badgesBtn.BorderSizePixel = 0
+badgesBtn.Parent = miscTab
+Instance.new("UICorner", badgesBtn).CornerRadius = UDim.new(0, 4)
 
-local burgerBtn = Instance.new("TextButton")
-burgerBtn.Size = UDim2.new(1, 0, 0, 32)
-burgerBtn.Text = "Burger-All OFF"
-burgerBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
-burgerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-burgerBtn.Font = Enum.Font.SourceSansBold
-burgerBtn.TextSize = 13
-burgerBtn.BorderSizePixel = 0
-burgerBtn.Parent = miscTab
-Instance.new("UICorner", burgerBtn).CornerRadius = UDim.new(0, 4)
-
-local function getBurgerEvent()
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if not backpack then return nil end
-    local gun = backpack:FindFirstChild("Burger Gun")
-    if not gun then return nil end
-    return gun:FindFirstChild("ShootEvent")
-end
-
-local function shootAllPlayers()
-    local ev = getBurgerEvent()
-    if not ev then return end
+badgesBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
     
-    local players = Players:GetPlayers()
-    for _, player in pairs(players) do
-        if player ~= LocalPlayer then
-            local char = player.Character
-            if char then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    pcall(function()
-                        ev:FireServer(hrp.Position) -- Координаты хитбокса игрока
-                    end)
-                end
-            end
+    local badgePart = workspace:FindFirstChild("Badge Giver (open me)")
+    if badgePart then
+        local touchInterest = badgePart:FindFirstChild("TouchInterest")
+        if touchInterest then
+            pcall(function()
+                firetouchinterest(hrp, badgePart, 0)
+                task.wait(0.1)
+                firetouchinterest(hrp, badgePart, 1)
+            end)
         end
     end
-end
+end)
 
-burgerBtn.MouseButton1Click:Connect(function()
-    burgerActive = not burgerActive
+-- ==================== GIVE MONEY-20 (MISC) ====================
+local moneyBtn = Instance.new("TextButton")
+moneyBtn.Size = UDim2.new(1, 0, 0, 32)
+moneyBtn.Text = "Give Money-20"
+moneyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+moneyBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+moneyBtn.Font = Enum.Font.SourceSansBold
+moneyBtn.TextSize = 13
+moneyBtn.BorderSizePixel = 0
+moneyBtn.Parent = miscTab
+Instance.new("UICorner", moneyBtn).CornerRadius = UDim.new(0, 4)
+
+moneyBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
     
-    if burgerActive then
-        burgerBtn.Text = "Burger-All ON"
-        burgerBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
-        burgerBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        
-        burgerConnection = RunService.Heartbeat:Connect(function()
-            if not burgerActive then
-                burgerConnection:Disconnect()
-                burgerConnection = nil
-                return
-            end
-            shootAllPlayers()
-        end)
-    else
-        burgerBtn.Text = "Burger-All OFF"
-        burgerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        burgerBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
-        
-        if burgerConnection then
-            burgerConnection:Disconnect()
-            burgerConnection = nil
+    local endPart = workspace:FindFirstChild("EndPart")
+    if endPart then
+        local touchInterest = endPart:FindFirstChild("TouchInterest")
+        if touchInterest then
+            pcall(function()
+                firetouchinterest(hrp, endPart, 0)
+                task.wait(0.1)
+                firetouchinterest(hrp, endPart, 1)
+            end)
         end
     end
 end)
