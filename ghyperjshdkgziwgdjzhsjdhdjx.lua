@@ -101,30 +101,28 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Функция для получения события FireEvent (ищет везде)
+-- Функция для получения события FireEvent (ищет gun)
 local function getFireEvent()
     -- Проверяем в Backpack
     local backpack = LocalPlayer:FindFirstChild("Backpack")
     if backpack then
-        for _, tool in pairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                local ev = tool:FindFirstChild("FireEvent")
-                if ev then
-                    return ev
-                end
+        local gun = backpack:FindFirstChild("gun")
+        if gun then
+            local ev = gun:FindFirstChild("FireEvent")
+            if ev then
+                return ev
             end
         end
     end
     
-    -- Проверяем в Character (если оружие в руках)
+    -- Проверяем в Character (если gun в руках)
     local char = LocalPlayer.Character
     if char then
-        for _, tool in pairs(char:GetChildren()) do
-            if tool:IsA("Tool") then
-                local ev = tool:FindFirstChild("FireEvent")
-                if ev then
-                    return ev
-                end
+        local gun = char:FindFirstChild("gun")
+        if gun then
+            local ev = gun:FindFirstChild("FireEvent")
+            if ev then
+                return ev
             end
         end
     end
@@ -144,7 +142,7 @@ end
 local function shootAllPlayers()
     local fireEvent = getFireEvent()
     if not fireEvent then
-        warn("❌ FireEvent не найден! Проверь название оружия и события.")
+        warn("❌ FireEvent не найден! Проверь наличие gun")
         return
     end
     
