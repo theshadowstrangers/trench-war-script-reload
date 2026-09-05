@@ -712,6 +712,23 @@ moneyBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== GIVE HYPERLASER-GUI (MISC) ====================
+local hyperLaserBtn = Instance.new("TextButton")
+hyperLaserBtn.Size = UDim2.new(1, 0, 0, 32)
+hyperLaserBtn.Text = "Give HyperLaser-Gui"
+hyperLaserBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+hyperLaserBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 200)
+hyperLaserBtn.Font = Enum.Font.SourceSansBold
+hyperLaserBtn.TextSize = 13
+hyperLaserBtn.BorderSizePixel = 0
+hyperLaserBtn.Parent = miscTab
+Instance.new("UICorner", hyperLaserBtn).CornerRadius = UDim.new(0, 4)
+
+hyperLaserBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/ghyperjshdkgziwgdjzhsjdhdjx.lua"))()
+end)
+
+
 -- ==================== SETTINGS ====================
 local settingsLabel = Instance.new("TextLabel")
 settingsLabel.Size = UDim2.new(1, 0, 0, 25)
