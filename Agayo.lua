@@ -327,6 +327,36 @@ local eventConfigs = {
             if not fish then return nil end
             return fish:FindFirstChild("FishEvent")
         end
+    },
+    -- ==================== НОВЫЕ ЕВЕНТЫ ====================
+    {
+        key = "SpawnTornadoEvent",
+        label = "Spawn Tornado",
+        getEvent = function()
+            return game:GetService("ReplicatedStorage").SpawnTornadoEvent
+        end
+    },
+    {
+        key = "SpawnEvent",
+        label = "Spawn UFO",
+        getEvent = function()
+            local backpack = LocalPlayer:FindFirstChild("Backpack")
+            if not backpack then return nil end
+            local ufo = backpack:FindFirstChild("UFO")
+            if not ufo then return nil end
+            return ufo:FindFirstChild("SpawnEvent")
+        end
+    },
+    {
+        key = "ThrowEvent",
+        label = "Throw Beans",
+        getEvent = function()
+            local char = LocalPlayer.Character
+            if not char then return nil end
+            local beans = char:FindFirstChild("Beans")
+            if not beans then return nil end
+            return beans:FindFirstChild("ThrowEvent")
+        end
     }
 }
 
@@ -590,6 +620,22 @@ xToolsBtn.MouseButton1Click:Connect(function()
             startSpamLoop()
         end
     end
+end)
+
+-- Misc The Give Cart
+local cartBtn = Instance.new("TextButton")
+cartBtn.Size = UDim2.new(1, 0, 0, 32)
+cartBtn.Text = "Give Cart-one"
+cartBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+cartBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 100)
+cartBtn.Font = Enum.Font.SourceSansBold
+cartBtn.TextSize = 13
+cartBtn.BorderSizePixel = 0
+cartBtn.Parent = miscTab
+Instance.new("UICorner", cartBtn).CornerRadius = UDim.new(0, 4)
+
+cartBtn.MouseButton1Click:Connect(function()
+    game:GetService("ReplicatedStorage").SpawnCartEvent:FireServer()
 end)
 
 -- ==================== SETTINGS ====================
