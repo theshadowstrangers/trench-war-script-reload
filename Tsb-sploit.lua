@@ -596,6 +596,23 @@ locateControlBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/sh4d0w-br0ker/trench-war-script/refs/heads/main/LC.lua", true))()
 end)
 
+-- ==================== PLAYER TAB ====================
+-- Dash No-cooldown Give (loadstring)
+
+local dashGiveBtn = Instance.new("TextButton")
+dashGiveBtn.Size = UDim2.new(1, 0, 0, 32)
+dashGiveBtn.Text = "Dash-no-cooldown Give"
+dashGiveBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dashGiveBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+dashGiveBtn.Font = Enum.Font.SourceSansBold
+dashGiveBtn.TextSize = 13
+dashGiveBtn.BorderSizePixel = 0
+dashGiveBtn.Parent = playerTab
+Instance.new("UICorner", dashGiveBtn).CornerRadius = UDim.new(0, 4)
+
+dashGiveBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/hdgdjshsjjssjdh.lua"))()
+end)
 
 -- ==================== TROLL TAB ====================
 local isSunsetAll = false
