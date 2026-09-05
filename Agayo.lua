@@ -357,6 +357,18 @@ local eventConfigs = {
             if not beans then return nil end
             return beans:FindFirstChild("ThrowEvent")
         end
+    },
+    -- ==================== OIL BARREL ====================
+    {
+        key = "OilBarrel",
+        label = "Oil Barrel",
+        getEvent = function()
+            local char = LocalPlayer.Character
+            if not char then return nil end
+            local barrel = char:FindFirstChild("Oil Barrel")
+            if not barrel then return nil end
+            return barrel:FindFirstChild("ThrowEvent")
+        end
     }
 }
 
@@ -636,6 +648,77 @@ Instance.new("UICorner", cartBtn).CornerRadius = UDim.new(0, 4)
 
 cartBtn.MouseButton1Click:Connect(function()
     game:GetService("ReplicatedStorage").SpawnCartEvent:FireServer()
+end)
+
+-- ==================== BURGER-ALL ====================
+local burgerActive = false
+local burgerConnection = nil
+
+local burgerBtn = Instance.new("TextButton")
+burgerBtn.Size = UDim2.new(1, 0, 0, 32)
+burgerBtn.Text = "Burger-All OFF"
+burgerBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+burgerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+burgerBtn.Font = Enum.Font.SourceSansBold
+burgerBtn.TextSize = 13
+burgerBtn.BorderSizePixel = 0
+burgerBtn.Parent = miscTab
+Instance.new("UICorner", burgerBtn).CornerRadius = UDim.new(0, 4)
+
+local function getBurgerEvent()
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if not backpack then return nil end
+    local gun = backpack:FindFirstChild("Burger Gun")
+    if not gun then return nil end
+    return gun:FindFirstChild("ShootEvent")
+end
+
+local function shootAllPlayers()
+    local ev = getBurgerEvent()
+    if not ev then return end
+    
+    local players = Players:GetPlayers()
+    for _, player in pairs(players) do
+        if player ~= LocalPlayer then
+            local char = player.Character
+            if char then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    pcall(function()
+                        ev:FireServer(hrp.Position) -- Координаты хитбокса игрока
+                    end)
+                end
+            end
+        end
+    end
+end
+
+burgerBtn.MouseButton1Click:Connect(function()
+    burgerActive = not burgerActive
+    
+    if burgerActive then
+        burgerBtn.Text = "Burger-All ON"
+        burgerBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        burgerBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        burgerConnection = RunService.Heartbeat:Connect(function()
+            if not burgerActive then
+                burgerConnection:Disconnect()
+                burgerConnection = nil
+                return
+            end
+            shootAllPlayers()
+        end)
+    else
+        burgerBtn.Text = "Burger-All OFF"
+        burgerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        burgerBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        if burgerConnection then
+            burgerConnection:Disconnect()
+            burgerConnection = nil
+        end
+    end
 end)
 
 -- ==================== SETTINGS ====================
