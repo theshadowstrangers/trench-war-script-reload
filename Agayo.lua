@@ -916,7 +916,7 @@ local function increaseHitbox(plr)
     for _, part in pairs(parts) do
         if part and part:IsA("BasePart") then
             local currentSize = part.Size
-            local newSize = currentSize * 1.9 -- увеличиваем на 90%
+            local newSize = currentSize * 0.6 -- увеличиваем на 90%
             part.Size = newSize
         end
     end
@@ -930,7 +930,7 @@ local function resetHitbox(plr)
             -- Возвращаем стандартный размер (1, 2, 2 для HumanoidRootPart и т.д.)
             -- Просто делим на 1.9
             local currentSize = part.Size
-            local newSize = currentSize / 1.9
+            local newSize = currentSize / 0.6
             part.Size = newSize
         end
     end
