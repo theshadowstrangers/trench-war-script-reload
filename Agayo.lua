@@ -728,6 +728,83 @@ hyperLaserBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/ghyperjshdkgziwgdjzhsjdhdjx.lua"))()
 end)
 
+-- ==================== GIVE BOMB-ALL-GUI ====================
+local bombGuiBtn = Instance.new("TextButton")
+bombGuiBtn.Size = UDim2.new(1, 0, 0, 32)
+bombGuiBtn.Text = "Give Bomb-all-Gui"
+bombGuiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+bombGuiBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
+bombGuiBtn.Font = Enum.Font.SourceSansBold
+bombGuiBtn.TextSize = 13
+bombGuiBtn.BorderSizePixel = 0
+bombGuiBtn.Parent = miscTab
+Instance.new("UICorner", bombGuiBtn).CornerRadius = UDim.new(0, 4)
+
+bombGuiBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/Agayobombisusisusud.lua"))()
+end)
+
+-- ==================== MONEY20-AUTO OFF/ON ====================
+local moneyAutoActive = false
+local moneyAutoConnection = nil
+
+local moneyAutoBtn = Instance.new("TextButton")
+moneyAutoBtn.Size = UDim2.new(1, 0, 0, 32)
+moneyAutoBtn.Text = "Money20-Auto OFF"
+moneyAutoBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+moneyAutoBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+moneyAutoBtn.Font = Enum.Font.SourceSansBold
+moneyAutoBtn.TextSize = 13
+moneyAutoBtn.BorderSizePixel = 0
+moneyAutoBtn.Parent = miscTab
+Instance.new("UICorner", moneyAutoBtn).CornerRadius = UDim.new(0, 4)
+
+local function collectMoney()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    local endPart = workspace:FindFirstChild("EndPart")
+    if endPart then
+        local touchInterest = endPart:FindFirstChild("TouchInterest")
+        if touchInterest then
+            pcall(function()
+                firetouchinterest(hrp, endPart, 0)
+                task.wait(0.1)
+                firetouchinterest(hrp, endPart, 1)
+            end)
+        end
+    end
+end
+
+moneyAutoBtn.MouseButton1Click:Connect(function()
+    moneyAutoActive = not moneyAutoActive
+    
+    if moneyAutoActive then
+        moneyAutoBtn.Text = "Money20-Auto ON"
+        moneyAutoBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        moneyAutoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        moneyAutoConnection = task.spawn(function()
+            while moneyAutoActive do
+                collectMoney()
+                task.wait(2) -- Ждём 2 секунды
+            end
+        end)
+    else
+        moneyAutoBtn.Text = "Money20-Auto OFF"
+        moneyAutoBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        moneyAutoBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        moneyAutoActive = false
+        if moneyAutoConnection then
+            coroutine.close(moneyAutoConnection)
+            moneyAutoConnection = nil
+        end
+    end
+end)
+
 
 -- ==================== SETTINGS ====================
 local settingsLabel = Instance.new("TextLabel")
