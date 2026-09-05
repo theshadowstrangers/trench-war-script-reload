@@ -121,7 +121,7 @@ local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
 local miscBtn, miscTab = createTab("Misc", "Misc")
 local settingsBtn, settingsTab = createTab("Settings", "Settings")
 local trollBtn, trollTab = createTab("Troll", "Troll")
-local twoKBtn, twoKTab = createTab("2Kshoter", "2Kshoter")
+local playersBtn, playersTab = createTab("Players", "Players")
 
 infoTab.Visible = true
 
@@ -718,6 +718,289 @@ targetingBtn.MouseButton1Click:Connect(function()
         print("✅ Таргет выключен")
     end
 end)
+
+-- =================== ESP-PLAYERS ====================
+local espPlayersActive = false
+local espPlayersConnections = {}
+local espPlayersObjects = {}
+
+local espPlayersBtn = Instance.new("TextButton")
+espPlayersBtn.Size = UDim2.new(1, 0, 0, 32)
+espPlayersBtn.Text = "Esp-Players OFF"
+espPlayersBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+espPlayersBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+espPlayersBtn.Font = Enum.Font.SourceSansBold
+espPlayersBtn.TextSize = 13
+espPlayersBtn.BorderSizePixel = 0
+espPlayersBtn.Parent = playersTab
+Instance.new("UICorner", espPlayersBtn).CornerRadius = UDim.new(0, 4)
+
+local function clearEspPlayers()
+    for _, obj in pairs(espPlayersObjects) do
+        obj:Destroy()
+    end
+    espPlayersObjects = {}
+    for _, conn in pairs(espPlayersConnections) do
+        conn:Disconnect()
+    end
+    espPlayersConnections = {}
+end
+
+local function createPlayerESP(plr)
+    if plr == LocalPlayer then return end
+    if not plr.Character then return end
+    
+    local char = plr.Character
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    -- Highlight
+    local highlight = char:FindFirstChild("EspPlayersHighlight")
+    if not highlight then
+        highlight = Instance.new("Highlight")
+        highlight.Name = "EspPlayersHighlight"
+        highlight.FillColor = Color3.fromRGB(0, 255, 0)
+        highlight.FillTransparency = 0.4
+        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+        highlight.OutlineTransparency = 0.2
+        highlight.Parent = char
+        table.insert(espPlayersObjects, highlight)
+    end
+    
+    -- Billboard
+    local billboard = hrp:FindFirstChild("EspPlayersBillboard")
+    if not billboard then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "EspPlayersBillboard"
+        billboard.Size = UDim2.new(0, 120, 0, 40)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = hrp
+        
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Name = "Name"
+        nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+        nameLabel.Text = plr.Name
+        nameLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+        nameLabel.BackgroundTransparency = 1
+        nameLabel.Font = Enum.Font.SourceSansBold
+        nameLabel.TextSize = 14
+        nameLabel.TextStrokeTransparency = 0.3
+        nameLabel.Parent = billboard
+        
+        local distLabel = Instance.new("TextLabel")
+        distLabel.Name = "Distance"
+        distLabel.Size = UDim2.new(1, 0, 0.5, 0)
+        distLabel.Position = UDim2.new(0, 0, 0.5, 0)
+        distLabel.Text = "0 studs"
+        distLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        distLabel.BackgroundTransparency = 1
+        distLabel.Font = Enum.Font.SourceSans
+        distLabel.TextSize = 12
+        distLabel.Parent = billboard
+        
+        table.insert(espPlayersObjects, billboard)
+    end
+    
+    -- Обновление расстояния
+    local connection = RunService.Heartbeat:Connect(function()
+        if not espPlayersActive then
+            connection:Disconnect()
+            return
+        end
+        if not plr or not plr.Character then
+            connection:Disconnect()
+            return
+        end
+        local localChar = LocalPlayer.Character
+        if not localChar then return end
+        local localHrp = localChar:FindFirstChild("HumanoidRootPart")
+        if not localHrp then return end
+        local targetHrp = plr.Character:FindFirstChild("HumanoidRootPart")
+        if not targetHrp then return end
+        
+        local dist = (targetHrp.Position - localHrp.Position).Magnitude
+        local bill = targetHrp:FindFirstChild("EspPlayersBillboard")
+        if bill then
+            local distLabel = bill:FindFirstChild("Distance")
+            if distLabel then
+                distLabel.Text = math.floor(dist) .. " studs"
+            end
+        end
+    end)
+    table.insert(espPlayersConnections, connection)
+end
+
+local function scanPlayers()
+    clearEspPlayers()
+    for _, plr in pairs(Players:GetPlayers()) do
+        createPlayerESP(plr)
+    end
+end
+
+espPlayersBtn.MouseButton1Click:Connect(function()
+    espPlayersActive = not espPlayersActive
+    
+    if espPlayersActive then
+        espPlayersBtn.Text = "Esp-Players ON"
+        espPlayersBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        espPlayersBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        scanPlayers()
+        
+        local conn = Players.PlayerAdded:Connect(function(plr)
+            if espPlayersActive then
+                task.wait(0.5)
+                scanPlayers()
+            end
+        end)
+        table.insert(espPlayersConnections, conn)
+        
+        local conn2 = Players.PlayerRemoved:Connect(function()
+            if espPlayersActive then
+                task.wait(0.1)
+                scanPlayers()
+            end
+        end)
+        table.insert(espPlayersConnections, conn2)
+        
+        local conn3 = Players.PlayerAdded:Connect(function(plr)
+            plr.CharacterAdded:Connect(function()
+                if espPlayersActive then
+                    task.wait(0.5)
+                    scanPlayers()
+                end
+            end)
+        end)
+        table.insert(espPlayersConnections, conn3)
+        
+    else
+        espPlayersBtn.Text = "Esp-Players OFF"
+        espPlayersBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        espPlayersBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        clearEspPlayers()
+    end
+end)
+
+-- ==================== HITBOX-ALL ====================
+local hitboxActive = false
+local hitboxConnection = nil
+
+local hitboxBtn = Instance.new("TextButton")
+hitboxBtn.Size = UDim2.new(1, 0, 0, 32)
+hitboxBtn.Text = "Hitbox-all OFF"
+hitboxBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+hitboxBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+hitboxBtn.Font = Enum.Font.SourceSansBold
+hitboxBtn.TextSize = 13
+hitboxBtn.BorderSizePixel = 0
+hitboxBtn.Parent = playersTab
+Instance.new("UICorner", hitboxBtn).CornerRadius = UDim.new(0, 4)
+
+local function getPlayerParts(plr)
+    if not plr or not plr.Character then return {} end
+    local parts = {}
+    local char = plr.Character
+    local partNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "HumanoidRootPart"}
+    for _, name in ipairs(partNames) do
+        local part = char:FindFirstChild(name)
+        if part and part:IsA("BasePart") then
+            table.insert(parts, part)
+        end
+    end
+    return parts
+end
+
+local function increaseHitbox(plr)
+    if not plr or not plr.Character then return end
+    local parts = getPlayerParts(plr)
+    for _, part in pairs(parts) do
+        if part and part:IsA("BasePart") then
+            local currentSize = part.Size
+            local newSize = currentSize * 1.9 -- увеличиваем на 90%
+            part.Size = newSize
+        end
+    end
+end
+
+local function resetHitbox(plr)
+    if not plr or not plr.Character then return end
+    local parts = getPlayerParts(plr)
+    for _, part in pairs(parts) do
+        if part and part:IsA("BasePart") then
+            -- Возвращаем стандартный размер (1, 2, 2 для HumanoidRootPart и т.д.)
+            -- Просто делим на 1.9
+            local currentSize = part.Size
+            local newSize = currentSize / 1.9
+            part.Size = newSize
+        end
+    end
+end
+
+local function updateHitboxes()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            increaseHitbox(plr)
+        end
+    end
+end
+
+hitboxBtn.MouseButton1Click:Connect(function()
+    hitboxActive = not hitboxActive
+    
+    if hitboxActive then
+        hitboxBtn.Text = "Hitbox-all ON"
+        hitboxBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        hitboxBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        -- Применяем ко всем игрокам
+        updateHitboxes()
+        
+        -- Запускаем цикл для постоянного обновления
+        hitboxConnection = RunService.Heartbeat:Connect(function()
+            if not hitboxActive then
+                hitboxConnection:Disconnect()
+                hitboxConnection = nil
+                return
+            end
+            updateHitboxes()
+        end)
+    else
+        hitboxBtn.Text = "Hitbox-all OFF"
+        hitboxBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        hitboxBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        if hitboxConnection then
+            hitboxConnection:Disconnect()
+            hitboxConnection = nil
+        end
+        
+        -- Возвращаем стандартные размеры
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer then
+                resetHitbox(plr)
+            end
+        end
+    end
+end)
+
+-- Очищаем при выходе
+local oldClose = CloseButton.MouseButton1Click
+CloseButton.MouseButton1Click:Connect(function()
+    espPlayersActive = false
+    clearEspPlayers()
+    hitboxActive = false
+    if hitboxConnection then
+        hitboxConnection:Disconnect()
+        hitboxConnection = nil
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            resetHitbox(plr)
+        end
+    end
+    ScreenGui:Destroy()
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
