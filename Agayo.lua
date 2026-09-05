@@ -881,7 +881,7 @@ espPlayersBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== HITBOX-ALL (КВАДРАТНЫЙ 90x90x90) ====================
+-- ==================== HITBOX-ALL (Хитбокс 90x90x90, проходимый) ====================
 local hitboxActive = false
 local hitboxConnection = nil
 
@@ -896,13 +896,15 @@ hitboxBtn.BorderSizePixel = 0
 hitboxBtn.Parent = playersTab
 Instance.new("UICorner", hitboxBtn).CornerRadius = UDim.new(0, 4)
 
+-- Функция для получения всех частей тела, которые формируют хитбокс
 local function getPlayerParts(plr)
     if not plr or not plr.Character then return {} end
     local parts = {}
-    local char = plr.Character
-    local partNames = {"Head", "Torso", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "HumanoidRootPart"}
+    -- R6: HumanoidRootPart, Head, Torso, Left Arm, Right Arm, Left Leg, Right Leg
+    -- R15: HumanoidRootPart, Head, UpperTorso, LowerTorso, LeftHand, RightHand, LeftFoot, RightFoot...
+    local partNames = {"Head", "Torso", "UpperTorso", "LowerTorso", "HumanoidRootPart", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftHand", "RightHand", "LeftFoot", "RightFoot"}
     for _, name in ipairs(partNames) do
-        local part = char:FindFirstChild(name)
+        local part = plr.Character:FindFirstChild(name)
         if part and part:IsA("BasePart") then
             table.insert(parts, part)
         end
@@ -910,34 +912,42 @@ local function getPlayerParts(plr)
     return parts
 end
 
-local function setSquareHitbox(plr)
+-- Включаем огромный и проходимый хитбокс
+local function enableBigHitbox(plr)
     if not plr or not plr.Character then return end
     local parts = getPlayerParts(plr)
     for _, part in pairs(parts) do
-        if part and part:IsA("BasePart") then
-            part.Size = Vector3.new(90, 90, 90) -- квадратный 90x90x90
+        if part then
+            part.Size = Vector3.new(90, 90, 90)  -- Делаем хитбокс огромным
+            part.CanCollide = false              -- Делаем его проходимым
+            part.Transparency = 0.9              -- Делаем почти прозрачным, чтобы не слепило (опционально)
         end
     end
 end
 
-local function resetSquareHitbox(plr)
+-- Выключаем (возвращаем как было)
+local function disableBigHitbox(plr)
     if not plr or not plr.Character then return end
     local parts = getPlayerParts(plr)
     for _, part in pairs(parts) do
-        if part and part:IsA("BasePart") then
-            part.Size = Vector3.new(1, 1, 1) -- стандартный размер
+        if part then
+            part.Size = Vector3.new(2, 2, 1)     -- Стандартный размер для HRP
+            part.CanCollide = true               -- Включаем коллизию обратно
+            part.Transparency = 0                -- Делаем снова видимым
         end
     end
 end
 
+-- Обновляем хитбоксы для всех игроков
 local function updateHitboxes()
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
-            setSquareHitbox(plr)
+            enableBigHitbox(plr)
         end
     end
 end
 
+-- Кнопка вкл/выкл
 hitboxBtn.MouseButton1Click:Connect(function()
     hitboxActive = not hitboxActive
     
@@ -948,6 +958,7 @@ hitboxBtn.MouseButton1Click:Connect(function()
         
         updateHitboxes()
         
+        -- Постоянно обновляем, чтобы новые игроки тоже получали хитбокс
         hitboxConnection = RunService.Heartbeat:Connect(function()
             if not hitboxActive then
                 hitboxConnection:Disconnect()
@@ -966,13 +977,31 @@ hitboxBtn.MouseButton1Click:Connect(function()
             hitboxConnection = nil
         end
         
+        -- Возвращаем всё как было
         for _, plr in pairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer then
-                resetSquareHitbox(plr)
+                disableBigHitbox(plr)
             end
         end
     end
 end)
+
+-- Очистка при закрытии GUI
+local oldClose = CloseButton.MouseButton1Click
+CloseButton.MouseButton1Click:Connect(function()
+    hitboxActive = false
+    if hitboxConnection then
+        hitboxConnection:Disconnect()
+        hitboxConnection = nil
+    end
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer then
+            disableBigHitbox(plr)
+        end
+    end
+    ScreenGui:Destroy()
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
