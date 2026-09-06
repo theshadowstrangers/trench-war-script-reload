@@ -1146,9 +1146,29 @@ local function createPlayerESP(plr)
 end
 
 local function scanPlayers()
+    -- Не очищаем полностью, а обновляем существующие объекты
+    -- Просто пересоздаём ESP для всех игроков
     clearEspPlayers()
     for _, plr in pairs(Players:GetPlayers()) do
         createPlayerESP(plr)
+    end
+end
+
+-- Функция для отслеживания перерождения персонажа
+local function setupCharacterTracking(plr)
+    if not plr then return end
+    
+    local function onCharacterAdded()
+        if espPlayersActive then
+            task.wait(0.5) -- даём персонажу время загрузиться
+            scanPlayers()
+        end
+    end
+    
+    -- Если у игрока уже есть CharacterAdded, подписываемся
+    if plr.CharacterAdded then
+        local conn = plr.CharacterAdded:Connect(onCharacterAdded)
+        table.insert(espPlayersConnections, conn)
     end
 end
 
@@ -1161,14 +1181,18 @@ espPlayersBtn.MouseButton1Click:Connect(function()
         espPlayersBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         scanPlayers()
         
+        -- Подписываемся на добавление новых игроков
         local conn = Players.PlayerAdded:Connect(function(plr)
             if espPlayersActive then
                 task.wait(0.5)
                 scanPlayers()
+                -- Отслеживаем перерождение этого игрока
+                setupCharacterTracking(plr)
             end
         end)
         table.insert(espPlayersConnections, conn)
         
+        -- Подписываемся на удаление игроков
         local conn2 = Players.PlayerRemoved:Connect(function()
             if espPlayersActive then
                 task.wait(0.1)
@@ -1177,15 +1201,19 @@ espPlayersBtn.MouseButton1Click:Connect(function()
         end)
         table.insert(espPlayersConnections, conn2)
         
-        local conn3 = Players.PlayerAdded:Connect(function(plr)
-            plr.CharacterAdded:Connect(function()
-                if espPlayersActive then
-                    task.wait(0.5)
-                    scanPlayers()
-                end
-            end)
+        -- Отслеживаем перерождение всех существующих игроков
+        for _, plr in pairs(Players:GetPlayers()) do
+            setupCharacterTracking(plr)
+        end
+        
+        -- Добавляем периодическое обновление для надежности (каждые 5 секунд)
+        local conn4 = RunService.Heartbeat:Connect(function()
+            if espPlayersActive then
+                -- Обновляем только если есть изменения
+                scanPlayers()
+            end
         end)
-        table.insert(espPlayersConnections, conn3)
+        table.insert(espPlayersConnections, conn4)
         
     else
         espPlayersBtn.Text = "Esp-Players OFF"
