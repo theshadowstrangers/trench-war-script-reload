@@ -117,10 +117,10 @@ local function createTab(tabName, displayName)
 end
 
 local infoBtn, infoTab = createTab("Info", "Info")
-local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
-local miscBtn, miscTab = createTab("Misc", "Misc")
-local trollBtn, trollTab = createTab("Troll", "Troll")
 local playersBtn, playersTab = createTab("Players", "Players")
+local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
+local trollBtn, trollTab = createTab("Troll", "Troll")
+local miscBtn, miscTab = createTab("Misc", "Misc")
 local settingsBtn, settingsTab = createTab("Settings", "Settings")
 
 infoTab.Visible = true
