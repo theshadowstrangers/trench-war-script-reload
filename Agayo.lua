@@ -119,9 +119,9 @@ end
 local infoBtn, infoTab = createTab("Info", "Info")
 local exploitBtn, exploitTab = createTab("Exploit", "Exploit")
 local miscBtn, miscTab = createTab("Misc", "Misc")
-local settingsBtn, settingsTab = createTab("Settings", "Settings")
 local trollBtn, trollTab = createTab("Troll", "Troll")
 local playersBtn, playersTab = createTab("Players", "Players")
+local settingsBtn, settingsTab = createTab("Settings", "Settings")
 
 infoTab.Visible = true
 
