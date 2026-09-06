@@ -1384,6 +1384,22 @@ allKillersCaboomBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== GIVE FAKEADMIN (MISC) ====================
+local fakeAdminBtn = Instance.new("TextButton")
+fakeAdminBtn.Size = UDim2.new(1, 0, 0, 32)
+fakeAdminBtn.Text = "Give FakeAdmin"
+fakeAdminBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+fakeAdminBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 200)
+fakeAdminBtn.Font = Enum.Font.SourceSansBold
+fakeAdminBtn.TextSize = 13
+fakeAdminBtn.BorderSizePixel = 0
+fakeAdminBtn.Parent = miscTab
+Instance.new("UICorner", fakeAdminBtn).CornerRadius = UDim.new(0, 4)
+
+fakeAdminBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/fakeadmin.lua"))()
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
