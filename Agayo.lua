@@ -650,6 +650,52 @@ cartBtn.MouseButton1Click:Connect(function()
     game:GetService("ReplicatedStorage").SpawnCartEvent:FireServer()
 end)
 
+-- ==================== AUTO-CART (MISC) ====================
+local autoCartActive = false
+local autoCartConnection = nil
+
+local autoCartBtn = Instance.new("TextButton")
+autoCartBtn.Size = UDim2.new(1, 0, 0, 32)
+autoCartBtn.Text = "Auto-cart OFF"
+autoCartBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+autoCartBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+autoCartBtn.Font = Enum.Font.SourceSansBold
+autoCartBtn.TextSize = 13
+autoCartBtn.BorderSizePixel = 0
+autoCartBtn.Parent = miscTab
+Instance.new("UICorner", autoCartBtn).CornerRadius = UDim.new(0, 4)
+
+autoCartBtn.MouseButton1Click:Connect(function()
+    autoCartActive = not autoCartActive
+    
+    if autoCartActive then
+        autoCartBtn.Text = "Auto-cart ON"
+        autoCartBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        autoCartBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        autoCartConnection = RunService.Heartbeat:Connect(function()
+            if not autoCartActive then
+                autoCartConnection:Disconnect()
+                autoCartConnection = nil
+                return
+            end
+            pcall(function()
+                game:GetService("ReplicatedStorage").SpawnCartEvent:FireServer()
+            end)
+        end)
+    else
+        autoCartBtn.Text = "Auto-cart OFF"
+        autoCartBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        autoCartBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        if autoCartConnection then
+            autoCartConnection:Disconnect()
+            autoCartConnection = nil
+        end
+    end
+end)
+
+
 -- ==================== GIVE BADGES (MISC) ====================
 local badgesBtn = Instance.new("TextButton")
 badgesBtn.Size = UDim2.new(1, 0, 0, 32)
