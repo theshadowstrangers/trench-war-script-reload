@@ -821,6 +821,90 @@ masterKillBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/masterkillguijdhdjzjsjshhdjdjsjsushs.lua"))()
 end)
 
+-- ==================== CAST LAVA (MISC) ====================
+
+-- Кнопка для одноразового использования
+local castLavaBtn = Instance.new("TextButton")
+castLavaBtn.Size = UDim2.new(1, 0, 0, 32)
+castLavaBtn.Text = "CastLava-one"
+castLavaBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+castLavaBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
+castLavaBtn.Font = Enum.Font.SourceSansBold
+castLavaBtn.TextSize = 13
+castLavaBtn.BorderSizePixel = 0
+castLavaBtn.Parent = miscTab
+Instance.new("UICorner", castLavaBtn).CornerRadius = UDim.new(0, 4)
+
+castLavaBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if char then
+        local staff = char:FindFirstChild("Lava Staff")
+        if staff then
+            local event = staff:FindFirstChild("CastLava")
+            if event then
+                pcall(function()
+                    event:FireServer()
+                end)
+            end
+        end
+    end
+end)
+
+-- Кнопка для автоматического спама
+local autoCastLavaActive = false
+local autoCastLavaConnection = nil
+
+local autoCastLavaBtn = Instance.new("TextButton")
+autoCastLavaBtn.Size = UDim2.new(1, 0, 0, 32)
+autoCastLavaBtn.Text = "Auto CastLava OFF"
+autoCastLavaBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+autoCastLavaBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+autoCastLavaBtn.Font = Enum.Font.SourceSansBold
+autoCastLavaBtn.TextSize = 13
+autoCastLavaBtn.BorderSizePixel = 0
+autoCastLavaBtn.Parent = miscTab
+Instance.new("UICorner", autoCastLavaBtn).CornerRadius = UDim.new(0, 4)
+
+autoCastLavaBtn.MouseButton1Click:Connect(function()
+    autoCastLavaActive = not autoCastLavaActive
+    
+    if autoCastLavaActive then
+        autoCastLavaBtn.Text = "Auto CastLava ON"
+        autoCastLavaBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        autoCastLavaBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        autoCastLavaConnection = RunService.Heartbeat:Connect(function()
+            if not autoCastLavaActive then
+                autoCastLavaConnection:Disconnect()
+                autoCastLavaConnection = nil
+                return
+            end
+            
+            local char = LocalPlayer.Character
+            if char then
+                local staff = char:FindFirstChild("Lava Staff")
+                if staff then
+                    local event = staff:FindFirstChild("CastLava")
+                    if event then
+                        pcall(function()
+                            event:FireServer()
+                        end)
+                    end
+                end
+            end
+        end)
+    else
+        autoCastLavaBtn.Text = "Auto CastLava OFF"
+        autoCastLavaBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        autoCastLavaBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        
+        if autoCastLavaConnection then
+            autoCastLavaConnection:Disconnect()
+            autoCastLavaConnection = nil
+        end
+    end
+end)
+
 
 -- ==================== SETTINGS ====================
 local settingsLabel = Instance.new("TextLabel")
