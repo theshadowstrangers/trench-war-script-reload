@@ -805,6 +805,22 @@ moneyAutoBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== GIVE MASTER-KILL-GUI (MISC) ====================
+local masterKillBtn = Instance.new("TextButton")
+masterKillBtn.Size = UDim2.new(1, 0, 0, 32)
+masterKillBtn.Text = "Give Master-Kill-Gui"
+masterKillBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+masterKillBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 200)
+masterKillBtn.Font = Enum.Font.SourceSansBold
+masterKillBtn.TextSize = 13
+masterKillBtn.BorderSizePixel = 0
+masterKillBtn.Parent = miscTab
+Instance.new("UICorner", masterKillBtn).CornerRadius = UDim.new(0, 4)
+
+masterKillBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/masterkillguijdhdjzjsjshhdjdjsjsushs.lua"))()
+end)
+
 
 -- ==================== SETTINGS ====================
 local settingsLabel = Instance.new("TextLabel")
