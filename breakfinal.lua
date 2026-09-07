@@ -1067,6 +1067,97 @@ unlockDoorBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- ===== DESTROY PLANKS =====
+CreateButton(tMisc, "DestroyPlanks", Color3.fromRGB(200, 100, 50), function()
+    RS.RemoteEvents.DestroyPlank:FireServer()
+end)
+
+-- ===== ICEPART-DETECT =====
+CreateButton(tMisc, "IcePart-Detect", Color3.fromRGB(50, 150, 200), function()
+    local iceParts = workspace:FindFirstChild("IceParts")
+    if iceParts then
+        for _, obj in pairs(iceParts:GetChildren()) do
+            local click = obj:FindFirstChild("ClickDetector")
+            if click then
+                fireclickdetector(click)
+                break
+            end
+        end
+    end
+end)
+
+-- ===== EGGS-END =====
+CreateButton(tMisc, "Eggs-End", Color3.fromRGB(200, 50, 200), function()
+    local iceParts = workspace:FindFirstChild("IceParts")
+    local eggMission = workspace:FindFirstChild("EggMission")
+    if not iceParts or not eggMission then return end
+    
+    local scarf = eggMission:FindFirstChild("")
+    if not scarf then return end
+    local handle = scarf:FindFirstChild("ScarfAccessory") and scarf.ScarfAccessory:FindFirstChild("Handle")
+    if not handle or not handle:IsA("BasePart") then return end
+    
+    local char = Player.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    local detectors = {}
+    for _, obj in pairs(iceParts:GetChildren()) do
+        local click = obj:FindFirstChild("ClickDetector")
+        if click then
+            table.insert(detectors, {Name = obj.Name, Click = click})
+            if #detectors >= 4 then break end
+        end
+    end
+    
+    for _, det in pairs(detectors) do
+        fireclickdetector(det.Click)
+        task.wait(0.2)
+        hrp.CFrame = handle.CFrame * CFrame.new(0, 0, 2)
+        task.wait(0.3)
+        RS.RemoteEvents.EggHuntEvent:FireServer(1, det.Name)
+        task.wait(0.2)
+    end
+end)
+
+-- ===== INSTANT-EGG-ENDS =====
+CreateButton(tMisc, "Instant-egg-ends", Color3.fromRGB(100, 200, 100), function()
+    local iceParts = workspace:FindFirstChild("IceParts")
+    local eggMission = workspace:FindFirstChild("EggMission")
+    if not iceParts or not eggMission then return end
+    
+    local scarf = eggMission:FindFirstChild("")
+    if not scarf then return end
+    local handle = scarf:FindFirstChild("ScarfAccessory") and scarf.ScarfAccessory:FindFirstChild("Handle")
+    if not handle or not handle:IsA("BasePart") then return end
+    
+    local char = Player.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    local clickDetector = nil
+    for _, obj in pairs(iceParts:GetChildren()) do
+        clickDetector = obj:FindFirstChild("ClickDetector")
+        if clickDetector then break end
+    end
+    if not clickDetector then return end
+    
+    hrp.CFrame = handle.CFrame * CFrame.new(0, 0, 2)
+    task.wait(0.2)
+    fireclickdetector(clickDetector)
+    task.wait(0.1)
+    
+    for i = 1, 10 do
+        RS.RemoteEvents.EggHuntEvent:FireServer(1, "IcePart" .. i)
+        task.wait(0.05)
+    end
+    
+    RS.RemoteEvents.EggHuntEvent:FireServer(3, "IcePart1")
+end)
+
+
 
 -- Kill Me Button
 CreateButton(tMisc, "Kill Me", Color3.fromRGB(180, 50, 50), function()
