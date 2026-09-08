@@ -190,13 +190,16 @@ local function startAura()
     -- Исключение для Extended
     if gloveName == "Extended" then
         event = ReplicatedStorage:FindFirstChild("b")
-    -- Исключение для Golden важно false обычный удар а true это под ульт
+    -- Исключение для Golden при false обычные при true типо как под ультой
     elseif gloveName == "Golden" then
         event = ReplicatedStorage:FindFirstChild("GoldenHit")
         extraArg = true
     -- Исключение для MR
     elseif gloveName == "MR" then
         event = ReplicatedStorage:FindFirstChild("MisterHit")
+    -- Исключение для Za Hando
+    elseif gloveName == "Za Hando" then
+        event = ReplicatedStorage:FindFirstChild("zhramt")
     else
         -- Обычный поиск для остальных перчаток
         local eventNames = {
@@ -276,6 +279,10 @@ local function startAura()
                                                     event:FireServer(leftLeg)
                                                 end)
                                             end
+                                        elseif gloveName == "Za Hando" then
+                                            pcall(function()
+                                                event:FireServer(otherHrp)
+                                            end)
                                         else
                                             local rightArm = otherChar:FindFirstChild("Right Arm")
                                             if rightArm then
