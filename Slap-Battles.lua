@@ -536,7 +536,8 @@ end)
 
 local invisiblePartActive = false
 local invisiblePart = nil
-local platformCFrame = CFrame.new(90.2251129, -5.17287493, -108.9260788, -0.384783238, 8.77443256e-08, 0.923006952, -8.72101413e-09, 1, -9.86991751e-08, -0.923006952, -4.60273455e-08, -0.384783238)
+-- Платформа ниже (изменён Y с -5.17 на -20)
+local platformCFrame = CFrame.new(90.2251129, -20, -88.9260788, -0.384783238, 8.77443256e-08, 0.923006952, -8.72101413e-09, 1, -9.86991751e-08, -0.923006952, -4.60273455e-08, -0.384783238)
 
 local invisiblePartBtn = Instance.new("TextButton")
 invisiblePartBtn.Size = UDim2.new(1, 0, 0, 40)
@@ -560,7 +561,7 @@ local function createPlatform()
     
     local part = Instance.new("Part")
     part.Name = "InvisiblePlatform"
-    part.Size = Vector3.new(1000, 0.5, 1000)  -- Ещё больше
+    part.Size = Vector3.new(1000, 0.5, 1000)
     part.CFrame = platformCFrame
     part.Anchored = true
     part.CanCollide = true
