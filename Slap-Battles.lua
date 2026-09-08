@@ -117,11 +117,11 @@ local function createTab(tabName, displayName)
 end
 
 local infoBtn, infoTab = createTab("Info", "Info")
+local playerBtn, playerTab = createTab("Player", "Player")
 local auraBtn, auraTab = createTab("Aura", "Aura")
-local settingsBtn, settingsTab = createTab("Settings", "Settings")
 local farmBtn, farmTab = createTab("Farm", "Farm")
 local teleportBtn, teleportTab = createTab("Teleport", "Teleport")
-local playerBtn, playerTab = createTab("Player", "Player")
+local settingsBtn, settingsTab = createTab("Settings", "Settings")
 
 infoTab.Visible = true
 
@@ -484,7 +484,7 @@ end)
 -- ==================== PLAYER TAB ====================
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(1, 0, 0, 20)
-speedLabel.Text = "Speed:"
+speedLabel.Text = ""
 speedLabel.TextColor3 = Color3.new(1, 1, 1)
 speedLabel.TextSize = 14
 speedLabel.Font = Enum.Font.SourceSansBold
@@ -537,7 +537,7 @@ end)
 local invisiblePartActive = false
 local invisiblePart = nil
 -- Платформа ниже (изменён Y с -5.17 на -20)
-local platformCFrame = CFrame.new(90.2251129, -20, -88.9260788, -0.384783238, 8.77443256e-08, 0.923006952, -8.72101413e-09, 1, -9.86991751e-08, -0.923006952, -4.60273455e-08, -0.384783238)
+local platformCFrame = CFrame.new(90.2251129, -17, -88.9260788, -0.384783238, 8.77443256e-08, 0.923006952, -8.72101413e-09, 1, -9.86991751e-08, -0.923006952, -4.60273455e-08, -0.384783238)
 
 local invisiblePartBtn = Instance.new("TextButton")
 invisiblePartBtn.Size = UDim2.new(1, 0, 0, 40)
