@@ -185,10 +185,15 @@ local function startAura()
     end
 
     local event = nil
+    local extraArg = nil
 
     -- Исключение для Extended
     if gloveName == "Extended" then
         event = ReplicatedStorage:FindFirstChild("b")
+    -- Исключение для Golden
+    elseif gloveName == "Golden" then
+        event = ReplicatedStorage:FindFirstChild("GoldenHit")
+        extraArg = false
     else
         -- Обычный поиск для остальных перчаток
         local eventNames = {
@@ -241,10 +246,16 @@ local function startAura()
                                     local dist = (hrp.Position - otherHrp.Position).Magnitude
                                     if dist <= settingsRadius then
                                         if gloveName == "Extended" then
-                                            -- Для Extended просто отправляем событие b
                                             pcall(function()
                                                 event:FireServer(otherHrp)
                                             end)
+                                        elseif gloveName == "Golden" then
+                                            local rightArm = otherChar:FindFirstChild("Right Arm")
+                                            if rightArm then
+                                                pcall(function()
+                                                    event:FireServer(rightArm, extraArg)
+                                                end)
+                                            end
                                         else
                                             local rightArm = otherChar:FindFirstChild("Right Arm")
                                             if rightArm then
