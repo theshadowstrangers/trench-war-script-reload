@@ -193,7 +193,7 @@ local function startAura()
     -- Исключение для Golden
     elseif gloveName == "Golden" then
         event = ReplicatedStorage:FindFirstChild("GoldenHit")
-        extraArg = false
+        extraArg = true
     else
         -- Обычный поиск для остальных перчаток
         local eventNames = {
