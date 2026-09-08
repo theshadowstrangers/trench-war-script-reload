@@ -190,7 +190,7 @@ local function startAura()
     -- Исключение для Extended
     if gloveName == "Extended" then
         event = ReplicatedStorage:FindFirstChild("b")
-    -- Исключение для Golden
+    -- Исключение для Golden важно false обычный удар а true это под ульт
     elseif gloveName == "Golden" then
         event = ReplicatedStorage:FindFirstChild("GoldenHit")
         extraArg = true
