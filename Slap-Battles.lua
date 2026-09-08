@@ -185,22 +185,37 @@ local function startAura()
     end
 
     local event = nil
+    local targetPart = nil
+    local extraArg = nil
 
-    local eventNames = {
-        gloveName .. "Hit",
-        string.lower(gloveName) .. "hit",
-        gloveName,
-        string.lower(gloveName),
-        string.upper(gloveName) .. "HIT",
-        string.lower(gloveName) .. "Hit",
-        gloveName .. "HIT",
-        string.lower(gloveName) .. "HIT"
-    }
-    for _, name in ipairs(eventNames) do
-        local ev = ReplicatedStorage:FindFirstChild(name)
-        if ev then
-            event = ev
-            break
+    -- Исключение для Extended
+    if gloveName == "Extended" then
+        event = ReplicatedStorage:FindFirstChild("b")
+        if event then
+            targetPart = workspace:FindFirstChild("VEGETA16305")
+            if targetPart then
+                targetPart = targetPart:FindFirstChild("Left Arm")
+            end
+            extraArg = Vector3.new(0.78878265619278, 3.2300764729598e-08, 0.61467224359512)
+        end
+    else
+        -- Обычный поиск для остальных перчаток
+        local eventNames = {
+            gloveName .. "Hit",
+            string.lower(gloveName) .. "hit",
+            gloveName,
+            string.lower(gloveName),
+            string.upper(gloveName) .. "HIT",
+            string.lower(gloveName) .. "Hit",
+            gloveName .. "HIT",
+            string.lower(gloveName) .. "HIT"
+        }
+        for _, name in ipairs(eventNames) do
+            local ev = ReplicatedStorage:FindFirstChild(name)
+            if ev then
+                event = ev
+                break
+            end
         end
     end
 
@@ -234,11 +249,21 @@ local function startAura()
                                 if otherHrp then
                                     local dist = (hrp.Position - otherHrp.Position).Magnitude
                                     if dist <= settingsRadius then
-                                        local rightArm = otherChar:FindFirstChild("Right Arm")
-                                        if rightArm then
-                                            pcall(function()
-                                                event:FireServer(rightArm)
-                                            end)
+                                        if gloveName == "Extended" then
+                                            -- Для Extended используем фиксированную цель и дополнительный аргумент
+                                            if targetPart then
+                                                pcall(function()
+                                                    event:FireServer(targetPart, extraArg)
+                                                end)
+                                            end
+                                        else
+                                            -- Для остальных перчаток Right Arm
+                                            local rightArm = otherChar:FindFirstChild("Right Arm")
+                                            if rightArm then
+                                                pcall(function()
+                                                    event:FireServer(rightArm)
+                                                end)
+                                            end
                                         end
                                     end
                                 end
