@@ -194,17 +194,26 @@ local function startAura()
     elseif gloveName == "Golden" then
         event = ReplicatedStorage:FindFirstChild("GoldenHit")
         extraArg = true
+    -- Исключение для MR
+    elseif gloveName == "MR" then
+        event = ReplicatedStorage:FindFirstChild("MisterHit")
     else
         -- Обычный поиск для остальных перчаток
         local eventNames = {
-            gloveName .. "Hit",
-            string.lower(gloveName) .. "hit",
-            gloveName,
-            string.lower(gloveName),
-            string.upper(gloveName) .. "HIT",
-            string.lower(gloveName) .. "Hit",
-            gloveName .. "HIT",
-            string.lower(gloveName) .. "HIT"
+            gloveName .. "Hit",                    -- SwapperHit
+            string.lower(gloveName) .. "hit",      -- swapperhit
+            gloveName,                             -- Swapper
+            string.lower(gloveName),               -- swapper
+            string.upper(gloveName) .. "HIT",      -- SWAPPERHIT
+            string.lower(gloveName) .. "Hit",      -- swapperHit
+            gloveName .. "HIT",                    -- SwapperHIT
+            string.lower(gloveName) .. "HIT",      -- swapperHIT
+            "Hit" .. gloveName,                   -- HitSwapper
+            "Hit" .. string.lower(gloveName),     -- Hitswapper
+            "HIT" .. gloveName,                   -- HITSwapper
+            "HIT" .. string.lower(gloveName),     -- HITswapper
+            "hit" .. gloveName,                   -- hitSwapper
+            "hit" .. string.lower(gloveName)      -- hitswapper
         }
         for _, name in ipairs(eventNames) do
             local ev = ReplicatedStorage:FindFirstChild(name)
@@ -254,6 +263,13 @@ local function startAura()
                                             if rightArm then
                                                 pcall(function()
                                                     event:FireServer(rightArm, extraArg)
+                                                end)
+                                            end
+                                        elseif gloveName == "MR" then
+                                            local leftLeg = otherChar:FindFirstChild("Left Leg")
+                                            if leftLeg then
+                                                pcall(function()
+                                                    event:FireServer(leftLeg)
                                                 end)
                                             end
                                         else
