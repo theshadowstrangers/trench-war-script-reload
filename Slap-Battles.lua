@@ -213,7 +213,11 @@ local function startAura()
             "HIT" .. gloveName,                   -- HITSwapper
             "HIT" .. string.lower(gloveName),     -- HITswapper
             "hit" .. gloveName,                   -- hitSwapper
-            "hit" .. string.lower(gloveName)      -- hitswapper
+            "hit" .. string.lower(gloveName),     -- hitswapper
+            "H" .. gloveName,                     -- HSwapper
+            "H" .. string.lower(gloveName),       -- Hswapper
+            "h" .. gloveName,                     -- hSwapper
+            "h" .. string.lower(gloveName)        -- hswapper
         }
         for _, name in ipairs(eventNames) do
             local ev = ReplicatedStorage:FindFirstChild(name)
