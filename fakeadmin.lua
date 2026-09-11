@@ -390,7 +390,7 @@ end
 
 -- Функция: Отправить сообщение от имени игрока
 local function whocreate()
-    local message = "SpyNote the official Creater This Expl0it Script! That's for using Me"
+    local message = "Bro i create the script, shut up pls lol"
     sendChatMessage(message)
 end
 
