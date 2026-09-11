@@ -11,6 +11,7 @@ end
 
 local espEnabled = false
 local espObjects = {}
+local killAuraEnabled = false
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SimpleExecutorGui"
@@ -19,8 +20,8 @@ screenGui.Parent = targetParent
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 260, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -130, 0.4, -100)
+mainFrame.Size = UDim2.new(0, 260, 0, 260)
+mainFrame.Position = UDim2.new(0.5, -130, 0.4, -130)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
@@ -118,10 +119,29 @@ autoFarmStroke.Color = Color3.fromRGB(60, 60, 60)
 autoFarmStroke.Thickness = 1
 autoFarmStroke.Parent = autoFarmBtn
 
+local killAuraBtn = Instance.new("TextButton")
+killAuraBtn.Size = UDim2.new(0, 220, 0, 40)
+killAuraBtn.Position = UDim2.new(0.5, -110, 0, 105)
+killAuraBtn.Text = "Kill Aura: OFF"
+killAuraBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+killAuraBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+killAuraBtn.Font = Enum.Font.GothamBold
+killAuraBtn.TextSize = 14
+killAuraBtn.Parent = contentFrame
+
+local killAuraCorner = Instance.new("UICorner")
+killAuraCorner.CornerRadius = UDim.new(0, 6)
+killAuraCorner.Parent = killAuraBtn
+
+local killAuraStroke = Instance.new("UIStroke")
+killAuraStroke.Color = Color3.fromRGB(60, 60, 60)
+killAuraStroke.Thickness = 1
+killAuraStroke.Parent = killAuraBtn
+
 local minimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
     minimized = not minimized
-    local targetSize = minimized and UDim2.new(0, 260, 0, 35) or UDim2.new(0, 260, 0, 200)
+    local targetSize = minimized and UDim2.new(0, 260, 0, 35) or UDim2.new(0, 260, 0, 260)
     minimizeBtn.Text = minimized and ">" or "<"
     contentFrame.Visible = not minimized
     
@@ -131,6 +151,7 @@ end)
 closeBtn.MouseButton1Click:Connect(function()
     espEnabled = false
     autoFarmEnabled = false
+    killAuraEnabled = false
     for _, obj in pairs(espObjects) do
         if obj then
             for _, subObj in pairs(obj) do pcall(function() subObj:Destroy() end) end
@@ -228,7 +249,6 @@ end)
 -- ==================== AUTO FARM ====================
 local autoFarmEnabled = false
 
--- Функция проверки: есть ли хоть один живой киллер
 local function hasAliveKillers()
     local killers = workspace:FindFirstChild("Killers")
     if not killers then return false end
@@ -243,7 +263,6 @@ local function hasAliveKillers()
     return false
 end
 
--- Функция убийства (копия из classic-Area51.lua)
 local function killAllKillersOnce()
     local backpack = localPlayer:FindFirstChild("Backpack")
     if not backpack then return end
@@ -314,11 +333,9 @@ local function killAllKillersOnce()
     end
 end
 
--- Цикл Auto farm
 task.spawn(function()
     while task.wait(0.5) do
         if autoFarmEnabled then
-            -- Проверяем, есть ли хоть один живой киллер
             if hasAliveKillers() then
                 killAllKillersOnce()
             end
@@ -334,5 +351,114 @@ autoFarmBtn.MouseButton1Click:Connect(function()
     else
         autoFarmBtn.Text = "Auto farm: OFF"
         autoFarmBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+-- ==================== KILL AURA ====================
+local function getHitEvent()
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if not backpack then return nil end
+
+    local hasWeapon = false
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name ~= "Flashlight" and tool:FindFirstChild("Hit") then
+            hasWeapon = true
+            break
+        end
+    end
+
+    if not hasWeapon then
+        local char = localPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local root = char.HumanoidRootPart
+            local oldCF = root.CFrame
+            local pistolCF = CFrame.new(-64.3158493, 735.329529, 18.362793, 0.0249549318, -1.01103925e-08, 0.999688566, 4.47392262e-11, 1, 1.01124256e-08, -0.999688566, -2.07629594e-10, 0.0249549318)
+            root.CFrame = pistolCF
+            task.wait(2)
+            root.CFrame = oldCF
+            task.wait(0.3)
+        end
+    end
+
+    local hitEvent = nil
+    for _, tool in pairs(backpack:GetChildren()) do
+        if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+            local hit = tool:FindFirstChild("Hit")
+            if hit then
+                hitEvent = hit
+                break
+            end
+        end
+    end
+
+    if not hitEvent then
+        local char = localPlayer.Character
+        if char then
+            for _, tool in pairs(char:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name ~= "Flashlight" then
+                    local hit = tool:FindFirstChild("Hit")
+                    if hit then
+                        hitEvent = hit
+                        break
+                    end
+                end
+            end
+        end
+    end
+
+    return hitEvent
+end
+
+local function killAuraLoop()
+    if not killAuraEnabled then return end
+
+    local char = localPlayer.Character
+    if not char then return end
+    local myHrp = char:FindFirstChild("HumanoidRootPart")
+    if not myHrp then return end
+
+    local hitEvent = getHitEvent()
+    if not hitEvent then return end
+
+    local killers = workspace:FindFirstChild("Killers")
+    if not killers then return end
+
+    for _, desc in pairs(killers:GetDescendants()) do
+        if desc:IsA("Model") then
+            local humanoid = desc:FindFirstChildOfClass("Humanoid")
+            local hrp = desc:FindFirstChild("HumanoidRootPart")
+            if humanoid and humanoid.Health > 0 and hrp then
+                local dist = (hrp.Position - myHrp.Position).Magnitude
+                if dist <= 30 then
+                    local zombie = desc:FindFirstChild("Zombie")
+                    if zombie then
+                        for i = 1, 5 do
+                            pcall(function()
+                                hitEvent:FireServer(zombie, "Head")
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(0.2) do
+        if killAuraEnabled then
+            killAuraLoop()
+        end
+    end
+end)
+
+killAuraBtn.MouseButton1Click:Connect(function()
+    killAuraEnabled = not killAuraEnabled
+    if killAuraEnabled then
+        killAuraBtn.Text = "Kill Aura: ON"
+        killAuraBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        killAuraBtn.Text = "Kill Aura: OFF"
+        killAuraBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
     end
 end)
