@@ -1400,6 +1400,21 @@ fakeAdminBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/fakeadmin.lua"))()
 end)
 
+-- ==================== GIVE AUTO-FARM-GUI (MISC) ====================
+local autoFarmGuiBtn = Instance.new("TextButton")
+autoFarmGuiBtn.Size = UDim2.new(1, 0, 0, 32)
+autoFarmGuiBtn.Text = "Give Auto-farm-Gui"
+autoFarmGuiBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoFarmGuiBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+autoFarmGuiBtn.Font = Enum.Font.SourceSansBold
+autoFarmGuiBtn.TextSize = 13
+autoFarmGuiBtn.BorderSizePixel = 0
+autoFarmGuiBtn.Parent = miscTab
+Instance.new("UICorner", autoFarmGuiBtn).CornerRadius = UDim.new(0, 4)
+
+autoFarmGuiBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/auto-farm-classic-area51-idhdidhsdisydsjshsidhdj.lua"))()
+end)
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
