@@ -749,7 +749,7 @@ deleteGameBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== PLAYER (NEW) ====================
+-- ==================== PLAYER (ползунок + Set Speed) ====================
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(1, 0, 0, 20)
 speedLabel.Text = "Speed:"
@@ -770,7 +770,6 @@ sliderValueLabel.BackgroundTransparency = 1
 sliderValueLabel.TextXAlignment = Enum.TextXAlignment.Right
 sliderValueLabel.Parent = playerTab
 
--- Ползунок
 local sliderFrame = Instance.new("Frame")
 sliderFrame.Size = UDim2.new(1, 0, 0, 30)
 sliderFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 65)
@@ -868,14 +867,13 @@ setSpeedBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==================== D-M (NEW) ====================
+-- ==================== D-M (Deleted Manager) ====================
 local dMPathInput = Instance.new("TextBox")
 dMPathInput.Size = UDim2.new(1, 0, 0, 35)
-dMPathInput.Position = UDim2.new(0, 0, 0, 0)
 dMPathInput.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 dMPathInput.BorderSizePixel = 0
 dMPathInput.Font = Enum.Font.SourceSans
-dMPathInput.PlaceholderText = "Введи путь"
+dMPathInput.PlaceholderText = "Введи путь (например workspace)"
 dMPathInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 130)
 dMPathInput.Text = ""
 dMPathInput.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -885,7 +883,7 @@ dMPathInput.Parent = dMTab
 Instance.new("UICorner", dMPathInput).CornerRadius = UDim.new(0, 6)
 
 local dMDeleteBtn = Instance.new("TextButton")
-dMDeleteBtn.Size = UDim2.new(1, 0, 0, 32)
+dMDeleteBtn.Size = UDim2.new(1, 0, 0, 35)
 dMDeleteBtn.Text = "Delete"
 dMDeleteBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 dMDeleteBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
@@ -893,10 +891,10 @@ dMDeleteBtn.Font = Enum.Font.SourceSansBold
 dMDeleteBtn.TextSize = 14
 dMDeleteBtn.BorderSizePixel = 0
 dMDeleteBtn.Parent = dMTab
-Instance.new("UICorner", dMDeleteBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", dMDeleteBtn).CornerRadius = UDim.new(0, 6)
 
 local dMPlayersPathBtn = Instance.new("TextButton")
-dMPlayersPathBtn.Size = UDim2.new(1, 0, 0, 32)
+dMPlayersPathBtn.Size = UDim2.new(1, 0, 0, 35)
 dMPlayersPathBtn.Text = "Players-path"
 dMPlayersPathBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 dMPlayersPathBtn.BackgroundColor3 = Color3.fromRGB(50, 80, 180)
@@ -904,15 +902,29 @@ dMPlayersPathBtn.Font = Enum.Font.SourceSansBold
 dMPlayersPathBtn.TextSize = 13
 dMPlayersPathBtn.BorderSizePixel = 0
 dMPlayersPathBtn.Parent = dMTab
-Instance.new("UICorner", dMPlayersPathBtn).CornerRadius = UDim.new(0, 4)
+Instance.new("UICorner", dMPlayersPathBtn).CornerRadius = UDim.new(0, 6)
+
+local dMPlayersMenuBtn = Instance.new("TextButton")
+dMPlayersMenuBtn.Size = UDim2.new(1, 0, 0, 35)
+dMPlayersMenuBtn.Text = "Players"
+dMPlayersMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+dMPlayersMenuBtn.BackgroundColor3 = Color3.fromRGB(110, 40, 180)
+dMPlayersMenuBtn.Font = Enum.Font.SourceSansBold
+dMPlayersMenuBtn.TextSize = 14
+dMPlayersMenuBtn.BorderSizePixel = 0
+dMPlayersMenuBtn.Parent = dMTab
+Instance.new("UICorner", dMPlayersMenuBtn).CornerRadius = UDim.new(0, 6)
 
 dMDeleteBtn.MouseButton1Click:Connect(function()
-    local path = dMPathInput.Text
-    if path == "" then return end
-    local Event = game:GetService("ReplicatedStorage").Events.OnDoorHit
-    pcall(function()
-        Event:FireServer(path)
-    end)
+    local pathText = dMPathInput.Text
+    if pathText == "" then return end
+
+    local getObject = loadstring("return " .. pathText)
+    if getObject then
+        local target = getObject()
+        local Event = game:GetService("ReplicatedStorage").Events.OnDoorHit
+        Event:FireServer(target)
+    end
 end)
 
 dMPlayersPathBtn.MouseButton1Click:Connect(function()
@@ -944,7 +956,7 @@ dMPlayersPathBtn.MouseButton1Click:Connect(function()
     headerLabel.Text = "Select Player"
     headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     headerLabel.BackgroundTransparency = 1
-    headerLabel.Font = Enum.Font.SourceSansBold
+    headerLabel.Font = Enum.Font.GothamBold
     headerLabel.TextSize = 14
     headerLabel.TextXAlignment = Enum.TextXAlignment.Left
     headerLabel.Parent = header
@@ -986,9 +998,97 @@ dMPlayersPathBtn.MouseButton1Click:Connect(function()
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
 
         b.MouseButton1Click:Connect(function()
-            dMPathInput.Text = plr.Name
+            dMPathInput.Text = "game.Players." .. plr.Name
             selectGui:Destroy()
         end)
+    end
+end)
+
+dMPlayersMenuBtn.MouseButton1Click:Connect(function()
+    local selectGui = Instance.new("ScreenGui")
+    selectGui.Name = "DMPlayersStructureSelector"
+    selectGui.Parent = game:GetService("CoreGui")
+    selectGui.ResetOnSpawn = false
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 260, 0, 360)
+    frame.Position = UDim2.new(0.5, -130, 0.5, -180)
+    frame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+    frame.BorderSizePixel = 0
+    frame.Parent = selectGui
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local stroke = Instance.new("UIStroke", frame)
+    stroke.Color = Color3.fromRGB(40, 40, 50)
+    stroke.Thickness = 1.5
+
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(1, 0, 0, 32)
+    header.BackgroundTransparency = 1
+    header.Parent = frame
+
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Size = UDim2.new(1, -40, 1, 0)
+    headerLabel.Position = UDim2.new(0, 10, 0, 0)
+    headerLabel.Text = "Players Paths"
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Font = Enum.Font.GothamBold
+    headerLabel.TextSize = 14
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    headerLabel.Parent = header
+
+    local closeSelect = Instance.new("TextButton")
+    closeSelect.Size = UDim2.new(0, 30, 1, 0)
+    closeSelect.Position = UDim2.new(1, -30, 0, 0)
+    closeSelect.Text = "×"
+    closeSelect.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeSelect.BackgroundTransparency = 1
+    closeSelect.Font = Enum.Font.GothamBold
+    closeSelect.TextSize = 18
+    closeSelect.Parent = header
+    closeSelect.MouseButton1Click:Connect(function()
+        selectGui:Destroy()
+    end)
+
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -16, 1, -50)
+    scroll.Position = UDim2.new(0, 8, 0, 40)
+    scroll.BackgroundTransparency = 1
+    scroll.ScrollBarThickness = 5
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.Parent = frame
+    Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
+
+    for _, plr in ipairs(game:GetService("Players"):GetPlayers()) do
+        local paths = {
+            ["Player (" .. plr.Name .. ")"] = "game.Players." .. plr.Name,
+            ["Character"] = "workspace:FindFirstChild('" .. plr.Name .. "')",
+            ["Backpack"] = "game.Players." .. plr.Name .. ".Backpack",
+            ["PlayerGui"] = "game.Players." .. plr.Name .. ".PlayerGui",
+            ["StarterGear"] = "game.Players." .. plr.Name .. ".StarterGear",
+            ["PlayerScripts"] = "game.Players." .. plr.Name .. ".PlayerScripts"
+        }
+
+        for title, pathStr in pairs(paths) do
+            local b = Instance.new("TextButton")
+            b.Size = UDim2.new(1, 0, 0, 30)
+            b.Text = " " .. title
+            b.TextColor3 = Color3.fromRGB(220, 220, 255)
+            b.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+            b.Font = Enum.Font.Gotham
+            b.TextSize = 12
+            b.TextXAlignment = Enum.TextXAlignment.Left
+            b.BorderSizePixel = 0
+            b.Parent = scroll
+            Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+
+            b.MouseButton1Click:Connect(function()
+                dMPathInput.Text = pathStr
+                selectGui:Destroy()
+            end)
+        end
     end
 end)
 
