@@ -1416,6 +1416,48 @@ autoFarmGuiBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/auto-farm-classic-area51-idhdidhsdisydsjshsidhdj.lua"))()
 end)
 
+-- ==================== INF-AMMO (MISC) ====================
+local infAmmoActive = false
+local infAmmoConnection = nil
+
+local infAmmoBtn = Instance.new("TextButton")
+infAmmoBtn.Size = UDim2.new(1, 0, 0, 32)
+infAmmoBtn.Text = "inf-ammo OFF"
+infAmmoBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+infAmmoBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+infAmmoBtn.Font = Enum.Font.SourceSansBold
+infAmmoBtn.TextSize = 13
+infAmmoBtn.BorderSizePixel = 0
+infAmmoBtn.Parent = miscTab
+Instance.new("UICorner", infAmmoBtn).CornerRadius = UDim.new(0, 4)
+
+infAmmoBtn.MouseButton1Click:Connect(function()
+    infAmmoActive = not infAmmoActive
+    if infAmmoActive then
+        infAmmoBtn.Text = "inf-ammo ON"
+        infAmmoBtn.BackgroundColor3 = Color3.fromRGB(85, 255, 85)
+        infAmmoBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+        
+        infAmmoConnection = task.spawn(function()
+            while infAmmoActive do
+                local Event = game:GetService("ReplicatedStorage"):FindFirstChild("RefillAmmo")
+                if Event then
+                    pcall(function()
+                        firesignal(Event.OnClientEvent)
+                    end)
+                end
+                task.wait(0.2)
+            end
+        end)
+    else
+        infAmmoBtn.Text = "inf-ammo OFF"
+        infAmmoBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        infAmmoBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
+        infAmmoActive = false
+        infAmmoConnection = nil
+    end
+end)
+
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
