@@ -38,6 +38,11 @@ Slap-Battles:
 loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/Slap-Battles.lua",
 true))()
 ```
+Break in story 2:
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/break2final.lua",
+true))()
+```
 using: get your pistol
 and press the kill button and that's it. If you need to turn it off, press the kill button again.
 
