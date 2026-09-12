@@ -1458,6 +1458,22 @@ autoFarmGuiBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/auto-farm-classic-area51-idhdidhsdisydsjshsidhdj.lua"))()
 end)
 
+-- ==================== GIVE TARGET-MENU (MISC) ====================
+local targetMenuBtn = Instance.new("TextButton")
+targetMenuBtn.Size = UDim2.new(1, 0, 0, 32)
+targetMenuBtn.Text = "Give Target-Menu"
+targetMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+targetMenuBtn.BackgroundColor3 = Color3.fromRGB(150, 50, 200)
+targetMenuBtn.Font = Enum.Font.SourceSansBold
+targetMenuBtn.TextSize = 13
+targetMenuBtn.BorderSizePixel = 0
+targetMenuBtn.Parent = miscTab
+Instance.new("UICorner", targetMenuBtn).CornerRadius = UDim.new(0, 4)
+
+targetMenuBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/theshadowstrangers/trench-war-script-reload/refs/heads/main/clarikclassicareagui9373837jdhjsg.lua"))()
+end)
+
 
 -- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
