@@ -1,3 +1,4 @@
+-- code
 -- ==================== PIANO ERUDITE GUI ====================
 local VIM = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
@@ -189,6 +190,7 @@ local SettingsList = Instance.new("UIListLayout", SettingsScroll)
 SettingsList.Padding = UDim.new(0, 8)
 SettingsList.SortOrder = Enum.SortOrder.LayoutOrder
 
+-- ==================== ФУНКЦИИ КЛАВИШ ====================
 local function pressKey(keyCode)
     VIM:SendKeyEvent(true, keyCode, false, game)
     task.wait(0.05)
@@ -211,6 +213,7 @@ local function holdKey(keyCode, holdTime)
     VIM:SendKeyEvent(false, keyCode, false, game)
 end
 
+-- ==================== ПЕСНЯ: Field of Memories ====================
 local function playFieldOfMemories()
     for i = 1, 2 do
         pressKey(Enum.KeyCode.T)
@@ -272,6 +275,7 @@ local function playFieldOfMemories()
     end
 end
 
+-- ==================== ПЕСНЯ: Nostalgia-2 ====================
 local function playNostalgia2()
     for i = 1, 3 do
         pressKey(Enum.KeyCode.J)
@@ -296,6 +300,7 @@ local function playNostalgia2()
     pressKey(Enum.KeyCode.J)
 end
 
+-- ==================== ПЕСНЯ: 7weaks-Nostal ====================
 local function play7weaksNostal()
     pressKey(Enum.KeyCode.P)
     task.wait(0.3)
@@ -335,6 +340,7 @@ local function play7weaksNostal()
     end
 end
 
+-- ==================== ПЕСНЯ: fnaf4-westi ====================
 local function playFnaf4Westi()
     holdKey(Enum.KeyCode.G, 0.7)
     task.wait(0.1)
@@ -371,6 +377,7 @@ local function playFnaf4Westi()
     holdKey(Enum.KeyCode.G, 0.7)
 end
 
+-- ==================== ПЕСНЯ: Germany-90x ====================
 local function playGermany90x()
     pressKey(Enum.KeyCode.T)
     task.wait(0.5)
@@ -397,7 +404,7 @@ end
 
 -- ==================== ПЕСНЯ: bad piggies ====================
 local function playBadPiggies()
-    -- s s P s (P теперь большая!)
+    -- s s P s (P большая)
     pressKey(Enum.KeyCode.S)
     task.wait(0.3)
     pressKey(Enum.KeyCode.S)
@@ -407,7 +414,7 @@ local function playBadPiggies()
     pressKey(Enum.KeyCode.S)
     task.wait(0.5)
 
-    -- P (большая) O (большая) o (маленькая)
+    -- P O o
     pressKeyShift(Enum.KeyCode.P)
     task.wait(0.3)
     pressKeyShift(Enum.KeyCode.O)
@@ -415,25 +422,7 @@ local function playBadPiggies()
     pressKey(Enum.KeyCode.O)
     task.wait(0.5)
 
-    -- P (большая) O (большая) o (маленькая) i Y (большая) i o
-    pressKeyShift(Enum.KeyCode.P)
-    task.wait(0.3)
-    pressKeyShift(Enum.KeyCode.O)
-    task.wait(0.3)
-    pressKey(Enum.KeyCode.O)
-    task.wait(0.3)
-    pressKey(Enum.KeyCode.I)
-    task.wait(0.3)
-    pressKeyShift(Enum.KeyCode.Y)
-    task.wait(0.3)
-    pressKey(Enum.KeyCode.I)
-    task.wait(0.3)
-    pressKey(Enum.KeyCode.O)
-    task.wait(0.5)
-
-    -- P (большая) P (большая) O (большая) o (маленькая) i Y (большая) i o
-    pressKeyShift(Enum.KeyCode.P)
-    task.wait(0.3)
+    -- P O o i Y i o
     pressKeyShift(Enum.KeyCode.P)
     task.wait(0.3)
     pressKeyShift(Enum.KeyCode.O)
@@ -449,7 +438,25 @@ local function playBadPiggies()
     pressKey(Enum.KeyCode.O)
     task.wait(0.5)
 
-    -- ФИНАЛ быстро 0.07: o Y (большая) t Y (большая) o Y (большая) y (маленькая)
+    -- P P O o i Y i o
+    pressKeyShift(Enum.KeyCode.P)
+    task.wait(0.3)
+    pressKeyShift(Enum.KeyCode.P)
+    task.wait(0.3)
+    pressKeyShift(Enum.KeyCode.O)
+    task.wait(0.3)
+    pressKey(Enum.KeyCode.O)
+    task.wait(0.3)
+    pressKey(Enum.KeyCode.I)
+    task.wait(0.3)
+    pressKeyShift(Enum.KeyCode.Y)
+    task.wait(0.3)
+    pressKey(Enum.KeyCode.I)
+    task.wait(0.3)
+    pressKey(Enum.KeyCode.O)
+    task.wait(0.5)
+
+    -- Финал быстро 0.07: o Y t Y o Y y
     pressKey(Enum.KeyCode.O)
     task.wait(0.07)
     pressKeyShift(Enum.KeyCode.Y)
@@ -465,6 +472,53 @@ local function playBadPiggies()
     pressKey(Enum.KeyCode.Y)
 end
 
+-- ==================== ПЕСНЯ: Area-51 ====================
+local function playArea51()
+    -- y I a d S a P O P a o I o I u y u T r y r — всё 0.2 сек
+    pressKey(Enum.KeyCode.Y)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.I)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.A)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.D)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.S)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.A)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.P)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.O)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.P)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.A)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.O)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.I)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.O)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.I)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.U)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.Y)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.U)
+    task.wait(0.2)
+    pressKeyShift(Enum.KeyCode.T)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.R)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.Y)
+    task.wait(0.2)
+    pressKey(Enum.KeyCode.R)
+end
+
+-- ==================== ФУНКЦИЯ ПРЫЖКА 2 РАЗА ====================
 local function jumpTwice()
     local char = LocalPlayer.Character
     if not char then return end
@@ -476,6 +530,7 @@ local function jumpTwice()
     humanoid.Jump = true
 end
 
+-- ==================== КНОПКА ПЕСНИ ====================
 local function createSongButton(parent, name, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -8, 0, 45)
@@ -580,9 +635,11 @@ createSongButton(SongsScroll, "7weaks-Nostal", play7weaksNostal)
 createSongButton(SongsScroll, "fnaf4-westi", playFnaf4Westi)
 createSongButton(SongsScroll, "Germany-90x", playGermany90x)
 createSongButton(SongsScroll, "bad piggies", playBadPiggies)
+createSongButton(SongsScroll, "Area-51", playArea51)
 
 createSettingsButton(SettingsScroll, "Jump 2", jumpTwice)
 
+-- ==================== НИЖНИЕ ВКЛАДКИ ====================
 local TabsBar = Instance.new("Frame")
 TabsBar.Name = "TabsBar"
 TabsBar.Parent = MainFrame
@@ -651,6 +708,7 @@ local settingsTabBtn = createTabButton("Settings", SettingsTab)
 infoTabBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 140)
 infoTabBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
 
+-- ==================== УПРАВЛЕНИЕ ОКНОМ ====================
 local isMinimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     isMinimized = not isMinimized
