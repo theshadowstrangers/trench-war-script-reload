@@ -719,7 +719,7 @@ task.spawn(function()
             local myHumanoid = myChar and myChar:FindFirstChildOfClass("Humanoid")
             local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
             if myHumanoid and myHrp and myHumanoid.Health > 0 then
-                if myHumanoid.Health < 10 then
+                if myHumanoid.Health < 30 then
                     myHrp.CFrame = saveCFrame
                     task.wait(10)
                 end
