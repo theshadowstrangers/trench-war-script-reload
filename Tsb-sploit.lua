@@ -193,6 +193,189 @@ skillBringBtn.MouseButton1Click:Connect(function()
         skillBringBtn.TextColor3 = Color3.fromRGB(255, 85, 85)
     end
 end)
+-- ==================== SAFE-TP & SAFE-BACK (в Exploit Tab) ====================
+local isSafeTpActive = false
+local preVoidTpCFrame = nil
+local voidTpPlatform = nil
+local safeTpBusy = false
+local safeTpProtection = false
+local safeTpHeartbeatConn = nil
+local safeTpOldFallen = workspace.FallenPartsDestroyHeight
+
+-- Функция для блокировки PingCheck
+local function blockPingCheck()
+    pcall(function()
+        local oldNamecall
+        oldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+            local method = getnamecallmethod()
+            local args = {...}
+            if method == "FireServer" and tostring(self) == "Communicate" then
+                local data = args[1]
+                if type(data) == "table" and data.Goal == "PingCheck" then
+                    return nil
+                end
+            end
+            return oldNamecall(self, ...)
+        end)
+    end)
+end
+
+-- Включаем защиту
+local function enableSafeTpProtection()
+    if safeTpProtection then return end
+    safeTpProtection = true
+
+    -- 1. Тормозим клиент
+    if not safeTpHeartbeatConn then
+        safeTpHeartbeatConn = RunService.Heartbeat:Connect(function()
+            local t = os.clock()
+            while os.clock() - t < 0.05 do end
+        end)
+    end
+
+    -- 2. Блокируем смерть (простая защита)
+    local char = LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.Health = hum.MaxHealth -- На всякий случай
+        -- Можно добавить хук на здоровье, но для простоты пока так
+    end
+
+    -- 3. Отключаем убийство об пол
+    pcall(function() workspace.FallenPartsDestroyHeight = -999999 end)
+end
+
+-- Выключаем защиту
+local function disableSafeTpProtection()
+    if not safeTpProtection then return end
+    safeTpProtection = false
+
+    if safeTpHeartbeatConn then
+        safeTpHeartbeatConn:Disconnect()
+        safeTpHeartbeatConn = nil
+    end
+    pcall(function() workspace.FallenPartsDestroyHeight = safeTpOldFallen end)
+end
+
+-- Кнопка Safe-Tp
+local safeTpBtn = Instance.new("TextButton")
+safeTpBtn.Size = UDim2.new(1, 0, 0, 32)
+safeTpBtn.Text = "Safe-Tp (Void)"
+safeTpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+safeTpBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+safeTpBtn.Font = Enum.Font.SourceSansBold
+safeTpBtn.TextSize = 13
+safeTpBtn.BorderSizePixel = 0
+safeTpBtn.Parent = exploitTab
+Instance.new("UICorner", safeTpBtn).CornerRadius = UDim.new(0, 4)
+
+-- Кнопка Safe-Back
+local safeBackBtn = Instance.new("TextButton")
+safeBackBtn.Size = UDim2.new(1, 0, 0, 32)
+safeBackBtn.Text = "Safe-Back"
+safeBackBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+safeBackBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 50)
+safeBackBtn.Font = Enum.Font.SourceSansBold
+safeBackBtn.TextSize = 13
+safeBackBtn.BorderSizePixel = 0
+safeBackBtn.Parent = exploitTab
+Instance.new("UICorner", safeBackBtn).CornerRadius = UDim.new(0, 4)
+
+-- Логика Safe-Tp
+safeTpBtn.MouseButton1Click:Connect(function()
+    if safeTpBusy then return end
+    safeTpBusy = true
+
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        safeTpBusy = false
+        return
+    end
+
+    -- Запоминаем позицию ДО телепорта
+    preVoidTpCFrame = hrp.CFrame
+    isSafeTpActive = true
+
+    -- Блокируем пинг-чек
+    blockPingCheck()
+    
+    -- Включаем защиту
+    enableSafeTpProtection()
+    task.wait(0.1)
+
+    -- Создаём платформу
+    if voidTpPlatform then voidTpPlatform:Destroy() end
+    voidTpPlatform = Instance.new("Part")
+    voidTpPlatform.Name = "VoidPlatform"
+    voidTpPlatform.Size = Vector3.new(2000, 5, 2000)
+    voidTpPlatform.Position = Vector3.new(hrp.Position.X, -5000, hrp.Position.Z)
+    voidTpPlatform.Anchored = true
+    voidTpPlatform.CanCollide = true
+    voidTpPlatform.Color = Color3.fromRGB(30, 30, 30)
+    voidTpPlatform.Material = Enum.Material.SmoothPlastic
+    voidTpPlatform.Transparency = 0.2
+    voidTpPlatform.Parent = workspace
+
+    -- Телепорт
+    hrp.CFrame = CFrame.new(hrp.Position.X, -4997, hrp.Position.Z)
+
+    safeTpBtn.Text = "Safe-Tp (Active)"
+    safeTpBtn.BackgroundColor3 = Color3.fromRGB(30, 100, 30)
+    safeTpBusy = false
+end)
+
+-- Логика Safe-Back
+safeBackBtn.MouseButton1Click:Connect(function()
+    if not isSafeTpActive or not preVoidTpCFrame then
+        safeBackBtn.Text = "No return point!"
+        task.wait(1)
+        safeBackBtn.Text = "Safe-Back"
+        return
+    end
+
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = preVoidTpCFrame
+    end
+
+    -- Убираем платформу
+    if voidTpPlatform then
+        voidTpPlatform:Destroy()
+        voidTpPlatform = nil
+    end
+
+    -- Выключаем защиту
+    disableSafeTpProtection()
+    isSafeTpActive = false
+    preVoidTpCFrame = nil
+
+    safeTpBtn.Text = "Safe-Tp (Void)"
+    safeTpBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 200)
+    
+    safeBackBtn.Text = "Returned!"
+    task.wait(1)
+    safeBackBtn.Text = "Safe-Back"
+end)
+
+-- Автоматическое отключение защиты, если персонаж не в пустоте
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(0.5)
+        if isSafeTpActive then
+            local char = LocalPlayer.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp or hrp.Position.Y > -4000 then
+                -- Если мы не в пустоте, выключаем защиту (но платформу не убираем, пока не нажмут Safe-Back)
+                -- Это на случай, если игрока телепортировало обратно другим скриптом
+                if safeTpProtection then
+                    disableSafeTpProtection()
+                end
+            end
+        end
+    end
+end)
 
 -- ==================== ESP TAB ====================
 local isEspEnabled = false
