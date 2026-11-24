@@ -1,0 +1,1571 @@
+-- ==================== BURPEVENT (FINAL MONITOR EDITION) ====================
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local LP = Players.LocalPlayer
+
+print("[BurpEvent] Initializing...")
+
+if CoreGui:FindFirstChild("BurpEventGui") then 
+    CoreGui.BurpEventGui:Destroy() 
+end
+
+local Screen = Instance.new("ScreenGui", CoreGui)
+Screen.Name = "BurpEventGui"
+Screen.ResetOnSpawn = false
+Screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Screen.IgnoreGuiInset = true
+
+-- ==================== CLIPBOARD ====================
+local function copyToClipboard(text)
+    if setclipboard then setclipboard(text) return true end
+    if setrbxclipboard then setrbxclipboard(text) return true end
+    if toclipboard then toclipboard(text) return true end
+    if set_clipboard then set_clipboard(text) return true end
+    if syn and syn.write_clipboard then syn.write_clipboard(text) return true end
+    if Clipboard and Clipboard.set then Clipboard.set(text) return true end
+    return false
+end
+
+-- ==================== MINI BTN ====================
+local MiniBtn = Instance.new("TextButton", Screen)
+MiniBtn.Size = UDim2.new(0, 80, 0, 26)
+MiniBtn.Position = UDim2.new(0.5, -40, 0, 5)
+MiniBtn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MiniBtn.BorderSizePixel = 0
+MiniBtn.Text = "BurpEvent"
+MiniBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MiniBtn.Font = Enum.Font.Gotham
+MiniBtn.TextSize = 11
+MiniBtn.AutoButtonColor = false
+MiniBtn.Visible = false
+MiniBtn.ZIndex = 100
+Instance.new("UICorner", MiniBtn).CornerRadius = UDim.new(0, 4)
+
+-- ==================== MAIN WINDOW ====================
+local Main = Instance.new("Frame", Screen)
+Main.Size = UDim2.new(0, 440, 0, 380)
+Main.Position = UDim2.new(0.5, -220, 0.5, -190)
+Main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Main.BorderSizePixel = 0
+Main.Active = true
+Main.Draggable = true
+Main.ClipsDescendants = true
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 6)
+
+local MainStroke = Instance.new("UIStroke", Main)
+MainStroke.Color = Color3.fromRGB(50, 50, 50)
+MainStroke.Thickness = 1
+
+local Top = Instance.new("Frame", Main)
+Top.Size = UDim2.new(1, 0, 0, 24)
+Top.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Top.BorderSizePixel = 0
+Top.ZIndex = 2
+
+local Title = Instance.new("TextLabel", Top)
+Title.Text = "BurpEvent [Monitor Edition]"
+Title.Size = UDim2.new(1, -60, 1, 0)
+Title.Position = UDim2.new(0, 8, 0, 0)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(255, 120, 0)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 12
+Title.ZIndex = 2
+
+local Close = Instance.new("TextButton", Top)
+Close.Text = "×"
+Close.Size = UDim2.new(0, 22, 0, 22)
+Close.Position = UDim2.new(1, -24, 0, 1)
+Close.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Close.BorderSizePixel = 0
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.Font = Enum.Font.Gotham
+Close.TextSize = 14
+Close.AutoButtonColor = false
+Close.ZIndex = 3
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 3)
+Close.MouseButton1Click:Connect(function() Screen:Destroy() end)
+
+local Minimize = Instance.new("TextButton", Top)
+Minimize.Text = "<"
+Minimize.Size = UDim2.new(0, 22, 0, 22)
+Minimize.Position = UDim2.new(1, -48, 0, 1)
+Minimize.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Minimize.BorderSizePixel = 0
+Minimize.TextColor3 = Color3.fromRGB(255, 255, 255)
+Minimize.Font = Enum.Font.Gotham
+Minimize.TextSize = 12
+Minimize.AutoButtonColor = false
+Minimize.ZIndex = 3
+Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 3)
+
+Minimize.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    MiniBtn.Visible = true
+end)
+MiniBtn.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    MiniBtn.Visible = false
+end)
+
+local ContentFrame = Instance.new("Frame", Main)
+ContentFrame.Size = UDim2.new(1, -10, 1, -60)
+ContentFrame.Position = UDim2.new(0, 5, 0, 28)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ZIndex = 2
+
+-- ==================== GLOBAL SETTINGS ====================
+local hookRemoteEvent = true
+local hookRemoteFunction = true
+local hookIncoming = true
+local monitorActive = true
+local MAX_EVENTS = 500
+local MAX_LOGS = 500
+
+-- Intercept
+local interceptActive = false
+local interceptTargetName = ""
+
+-- Brute
+local bruteActive = false
+local bruteEventData = nil
+
+-- ==================== INFO TAB ====================
+local InfoTab = Instance.new("Frame", ContentFrame)
+InfoTab.Size = UDim2.new(1, 0, 1, 0)
+InfoTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+InfoTab.BorderSizePixel = 0
+InfoTab.ZIndex = 2
+InfoTab.Visible = true
+Instance.new("UICorner", InfoTab).CornerRadius = UDim.new(0, 4)
+
+local InfoLabel = Instance.new("TextLabel", InfoTab)
+InfoLabel.Size = UDim2.new(1, -12, 1, -12)
+InfoLabel.Position = UDim2.new(0, 6, 0, 6)
+InfoLabel.BackgroundTransparency = 1
+InfoLabel.Text = "BurpEvent — Monitor Edition\n\n• Info — информация\n• Note — перехват + поиск\n• Repeater — редактор + Execute (можно писать свой код)\n• Monitor — логи с copy и Find\n• Intercept — полная блокировка одного эвента\n• Forse — фаззинг (€)\n• Settings — конфигурация"
+InfoLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+InfoLabel.TextYAlignment = Enum.TextYAlignment.Top
+InfoLabel.TextWrapped = true
+InfoLabel.Font = Enum.Font.Gotham
+InfoLabel.TextSize = 10
+InfoLabel.ZIndex = 3
+
+-- ==================== NOTE TAB ====================
+local function createSpyTab(parent)
+    local tab = Instance.new("Frame", parent)
+    tab.Size = UDim2.new(1, 0, 1, 0)
+    tab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+    tab.BorderSizePixel = 0
+    tab.ZIndex = 2
+    tab.Visible = false
+    Instance.new("UICorner", tab).CornerRadius = UDim.new(0, 4)
+
+    -- Поиск по эвентам
+    local searchBox = Instance.new("TextBox", tab)
+    searchBox.Size = UDim2.new(0.65, -4, 0, 22)
+    searchBox.Position = UDim2.new(0, 4, 0, 4)
+    searchBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    searchBox.BorderSizePixel = 0
+    searchBox.Text = ""
+    searchBox.PlaceholderText = "Search event name..."
+    searchBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+    searchBox.TextColor3 = Color3.fromRGB(230, 230, 230)
+    searchBox.TextXAlignment = Enum.TextXAlignment.Left
+    searchBox.Font = Enum.Font.Gotham
+    searchBox.TextSize = 10
+    searchBox.ClearTextOnFocus = false
+    searchBox.ZIndex = 3
+    Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0, 3)
+    Instance.new("UIPadding", searchBox).PaddingLeft = UDim.new(0, 6)
+
+    local findBtn = Instance.new("TextButton", tab)
+    findBtn.Size = UDim2.new(0.35, -4, 0, 22)
+    findBtn.Position = UDim2.new(0.65, 2, 0, 4)
+    findBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+    findBtn.BorderSizePixel = 0
+    findBtn.Text = "Find"
+    findBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    findBtn.Font = Enum.Font.GothamBold
+    findBtn.TextSize = 10
+    findBtn.AutoButtonColor = false
+    findBtn.ZIndex = 3
+    Instance.new("UICorner", findBtn).CornerRadius = UDim.new(0, 3)
+
+    local leftPanel = Instance.new("ScrollingFrame", tab)
+    leftPanel.Size = UDim2.new(0.4, -4, 1, -150)
+    leftPanel.Position = UDim2.new(0, 4, 0, 30)
+    leftPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    leftPanel.BorderSizePixel = 0
+    leftPanel.ScrollBarThickness = 3
+    leftPanel.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+    leftPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
+    leftPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    leftPanel.ZIndex = 3
+    Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 3)
+    Instance.new("UIListLayout", leftPanel).Padding = UDim.new(0, 2)
+
+    local rightPanel = Instance.new("ScrollingFrame", tab)
+    rightPanel.Size = UDim2.new(0.6, -6, 1, -150)
+    rightPanel.Position = UDim2.new(0.4, 2, 0, 30)
+    rightPanel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    rightPanel.BorderSizePixel = 0
+    rightPanel.ScrollBarThickness = 3
+    rightPanel.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+    rightPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
+    rightPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    rightPanel.ZIndex = 3
+    Instance.new("UICorner", rightPanel).CornerRadius = UDim.new(0, 3)
+
+    local rightText = Instance.new("TextLabel", rightPanel)
+    rightText.Size = UDim2.new(1, -8, 0, 20)
+    rightText.Position = UDim2.new(0, 4, 0, 4)
+    rightText.BackgroundTransparency = 1
+    rightText.Text = "-- выбери --"
+    rightText.TextColor3 = Color3.fromRGB(220, 220, 220)
+    rightText.TextXAlignment = Enum.TextXAlignment.Left
+    rightText.TextYAlignment = Enum.TextYAlignment.Top
+    rightText.TextWrapped = true
+    rightText.Font = Enum.Font.Code
+    rightText.TextSize = 9
+    rightText.ZIndex = 3
+    rightText.AutomaticSize = Enum.AutomaticSize.Y
+
+    local bottomPanel = Instance.new("Frame", tab)
+    bottomPanel.Size = UDim2.new(1, -8, 0, 110)
+    bottomPanel.Position = UDim2.new(0, 4, 1, -114)
+    bottomPanel.BackgroundTransparency = 1
+    bottomPanel.ZIndex = 3
+
+    local function createBtn(text, x, y, w, h, color)
+        local b = Instance.new("TextButton", bottomPanel)
+        b.Size = UDim2.new(w, -2, 0, h)
+        b.Position = UDim2.new(x, 2, 0, y)
+        b.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30)
+        b.BorderSizePixel = 0
+        b.Text = text
+        b.TextColor3 = Color3.fromRGB(255, 255, 255)
+        b.Font = Enum.Font.Gotham
+        b.TextSize = 10
+        b.AutoButtonColor = false
+        b.ZIndex = 3
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
+        return b
+    end
+
+    local BtnH = 26
+    local FireBtn = createBtn("Fire", 0, 0, 0.5, BtnH)
+    local CopyBtn = createBtn("Copy", 0.5, 0, 0.5, BtnH)
+    local SpamBtn = createBtn("Spam", 0, BtnH + 2, 0.5, BtnH)
+    local ClearBtn = createBtn("Clear", 0.5, BtnH + 2, 0.5, BtnH)
+    local BlockBtn = createBtn("Block", 0, (BtnH + 2) * 2, 0.5, BtnH, Color3.fromRGB(80, 30, 30))
+    local UnblockBtn = createBtn("Unblock", 0.5, (BtnH + 2) * 2, 0.5, BtnH, Color3.fromRGB(30, 60, 80))
+    local CopyInfoBtn = createBtn("CopyInfo", 0, (BtnH + 2) * 3, 1, BtnH)
+
+    return {
+        tab = tab,
+        leftPanel = leftPanel,
+        rightPanel = rightPanel,
+        rightText = rightText,
+        FireBtn = FireBtn,
+        CopyBtn = CopyBtn,
+        SpamBtn = SpamBtn,
+        ClearBtn = ClearBtn,
+        BlockBtn = BlockBtn,
+        UnblockBtn = UnblockBtn,
+        CopyInfoBtn = CopyInfoBtn,
+        searchBox = searchBox,
+        findBtn = findBtn,
+    }
+end
+
+local NoteUI = createSpyTab(ContentFrame)
+
+-- ==================== REPEATER TAB ====================
+local RepeaterTab = Instance.new("Frame", ContentFrame)
+RepeaterTab.Size = UDim2.new(1, 0, 1, 0)
+RepeaterTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+RepeaterTab.BorderSizePixel = 0
+RepeaterTab.ZIndex = 2
+RepeaterTab.Visible = false
+Instance.new("UICorner", RepeaterTab).CornerRadius = UDim.new(0, 4)
+
+local RepeaterScroll = Instance.new("ScrollingFrame", RepeaterTab)
+RepeaterScroll.Size = UDim2.new(1, -8, 1, -45)
+RepeaterScroll.Position = UDim2.new(0, 4, 0, 4)
+RepeaterScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+RepeaterScroll.BorderSizePixel = 0
+RepeaterScroll.ScrollBarThickness = 3
+RepeaterScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+RepeaterScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+RepeaterScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+RepeaterScroll.ZIndex = 3
+Instance.new("UICorner", RepeaterScroll).CornerRadius = UDim.new(0, 3)
+
+local RepeaterBox = Instance.new("TextBox", RepeaterScroll)
+RepeaterBox.Size = UDim2.new(1, -8, 1, -8)
+RepeaterBox.Position = UDim2.new(0, 4, 0, 4)
+RepeaterBox.BackgroundTransparency = 1
+RepeaterBox.Text = "-- Впиши свой код или Load из Note --"
+RepeaterBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+RepeaterBox.TextXAlignment = Enum.TextXAlignment.Left
+RepeaterBox.TextYAlignment = Enum.TextYAlignment.Top
+RepeaterBox.TextWrapped = true
+RepeaterBox.MultiLine = true
+RepeaterBox.ClearTextOnFocus = false
+RepeaterBox.Font = Enum.Font.Code
+RepeaterBox.TextSize = 10
+RepeaterBox.ZIndex = 3
+
+local LoadSelectedBtn = Instance.new("TextButton", RepeaterTab)
+LoadSelectedBtn.Size = UDim2.new(0.33, -4, 0, 32)
+LoadSelectedBtn.Position = UDim2.new(0, 4, 1, -36)
+LoadSelectedBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+LoadSelectedBtn.BorderSizePixel = 0
+LoadSelectedBtn.Text = "Load"
+LoadSelectedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LoadSelectedBtn.Font = Enum.Font.GothamBold
+LoadSelectedBtn.TextSize = 11
+LoadSelectedBtn.AutoButtonColor = false
+LoadSelectedBtn.ZIndex = 3
+Instance.new("UICorner", LoadSelectedBtn).CornerRadius = UDim.new(0, 4)
+
+local RepeaterClearBtn = Instance.new("TextButton", RepeaterTab)
+RepeaterClearBtn.Size = UDim2.new(0.33, -4, 0, 32)
+RepeaterClearBtn.Position = UDim2.new(0.33, 2, 1, -36)
+RepeaterClearBtn.BackgroundColor3 = Color3.fromRGB(80, 30, 30)
+RepeaterClearBtn.BorderSizePixel = 0
+RepeaterClearBtn.Text = "Clear"
+RepeaterClearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RepeaterClearBtn.Font = Enum.Font.GothamBold
+RepeaterClearBtn.TextSize = 11
+RepeaterClearBtn.AutoButtonColor = false
+RepeaterClearBtn.ZIndex = 3
+Instance.new("UICorner", RepeaterClearBtn).CornerRadius = UDim.new(0, 4)
+
+local ExecuteBtn = Instance.new("TextButton", RepeaterTab)
+ExecuteBtn.Size = UDim2.new(0.33, -4, 0, 32)
+ExecuteBtn.Position = UDim2.new(0.66, 0, 1, -36)
+ExecuteBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+ExecuteBtn.BorderSizePixel = 0
+ExecuteBtn.Text = "Execute"
+ExecuteBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecuteBtn.Font = Enum.Font.GothamBold
+ExecuteBtn.TextSize = 11
+ExecuteBtn.AutoButtonColor = false
+ExecuteBtn.ZIndex = 3
+Instance.new("UICorner", ExecuteBtn).CornerRadius = UDim.new(0, 4)
+
+-- ==================== MONITOR TAB ====================
+local MonitorTab = Instance.new("Frame", ContentFrame)
+MonitorTab.Size = UDim2.new(1, 0, 1, 0)
+MonitorTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+MonitorTab.BorderSizePixel = 0
+MonitorTab.ZIndex = 2
+MonitorTab.Visible = false
+Instance.new("UICorner", MonitorTab).CornerRadius = UDim.new(0, 4)
+
+local monSearchBox = Instance.new("TextBox", MonitorTab)
+monSearchBox.Size = UDim2.new(0.55, -4, 0, 22)
+monSearchBox.Position = UDim2.new(0, 4, 0, 4)
+monSearchBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+monSearchBox.BorderSizePixel = 0
+monSearchBox.Text = ""
+monSearchBox.PlaceholderText = "Search logs..."
+monSearchBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+monSearchBox.TextColor3 = Color3.fromRGB(230, 230, 230)
+monSearchBox.TextXAlignment = Enum.TextXAlignment.Left
+monSearchBox.Font = Enum.Font.Gotham
+monSearchBox.TextSize = 10
+monSearchBox.ClearTextOnFocus = false
+monSearchBox.ZIndex = 3
+Instance.new("UICorner", monSearchBox).CornerRadius = UDim.new(0, 3)
+Instance.new("UIPadding", monSearchBox).PaddingLeft = UDim.new(0, 6)
+
+local monFindBtn = Instance.new("TextButton", MonitorTab)
+monFindBtn.Size = UDim2.new(0.2, -4, 0, 22)
+monFindBtn.Position = UDim2.new(0.55, 2, 0, 4)
+monFindBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 50)
+monFindBtn.BorderSizePixel = 0
+monFindBtn.Text = "Find"
+monFindBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+monFindBtn.Font = Enum.Font.GothamBold
+monFindBtn.TextSize = 10
+monFindBtn.AutoButtonColor = false
+monFindBtn.ZIndex = 3
+Instance.new("UICorner", monFindBtn).CornerRadius = UDim.new(0, 3)
+
+local monClearBtn = Instance.new("TextButton", MonitorTab)
+monClearBtn.Size = UDim2.new(0.25, -4, 0, 22)
+monClearBtn.Position = UDim2.new(0.75, 2, 0, 4)
+monClearBtn.BackgroundColor3 = Color3.fromRGB(120, 40, 40)
+monClearBtn.BorderSizePixel = 0
+monClearBtn.Text = "Clear"
+monClearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+monClearBtn.Font = Enum.Font.GothamBold
+monClearBtn.TextSize = 10
+monClearBtn.AutoButtonColor = false
+monClearBtn.ZIndex = 3
+Instance.new("UICorner", monClearBtn).CornerRadius = UDim.new(0, 3)
+
+local monScroll = Instance.new("ScrollingFrame", MonitorTab)
+monScroll.Size = UDim2.new(1, -8, 1, -34)
+monScroll.Position = UDim2.new(0, 4, 0, 30)
+monScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+monScroll.BorderSizePixel = 0
+monScroll.ScrollBarThickness = 3
+monScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+monScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+monScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+monScroll.ZIndex = 3
+Instance.new("UICorner", monScroll).CornerRadius = UDim.new(0, 3)
+
+local monList = Instance.new("UIListLayout", monScroll)
+monList.Padding = UDim.new(0, 2)
+
+-- ==================== INTERCEPT TAB ====================
+local InterceptTab = Instance.new("Frame", ContentFrame)
+InterceptTab.Size = UDim2.new(1, 0, 1, 0)
+InterceptTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+InterceptTab.BorderSizePixel = 0
+InterceptTab.ZIndex = 2
+InterceptTab.Visible = false
+Instance.new("UICorner", InterceptTab).CornerRadius = UDim.new(0, 4)
+
+local InterceptScroll = Instance.new("ScrollingFrame", InterceptTab)
+InterceptScroll.Size = UDim2.new(1, -8, 1, -45)
+InterceptScroll.Position = UDim2.new(0, 4, 0, 4)
+InterceptScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+InterceptScroll.BorderSizePixel = 0
+InterceptScroll.ScrollBarThickness = 3
+InterceptScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+InterceptScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+InterceptScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+InterceptScroll.ZIndex = 3
+Instance.new("UICorner", InterceptScroll).CornerRadius = UDim.new(0, 3)
+
+local InterceptText = Instance.new("TextLabel", InterceptScroll)
+InterceptText.Size = UDim2.new(1, -8, 0, 40)
+InterceptText.Position = UDim2.new(0, 4, 0, 4)
+InterceptText.BackgroundTransparency = 1
+InterceptText.Text = "Выберите евент в Note и нажмите Load для полной блокировки"
+InterceptText.TextColor3 = Color3.fromRGB(200, 200, 200)
+InterceptText.TextXAlignment = Enum.TextXAlignment.Left
+InterceptText.TextYAlignment = Enum.TextYAlignment.Top
+InterceptText.TextWrapped = true
+InterceptText.Font = Enum.Font.Code
+InterceptText.TextSize = 9
+InterceptText.ZIndex = 3
+InterceptText.AutomaticSize = Enum.AutomaticSize.Y
+
+local InterceptLoadBtn = Instance.new("TextButton", InterceptTab)
+InterceptLoadBtn.Size = UDim2.new(0.6, -6, 0, 32)
+InterceptLoadBtn.Position = UDim2.new(0, 4, 1, -36)
+InterceptLoadBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+InterceptLoadBtn.BorderSizePixel = 0
+InterceptLoadBtn.Text = "Load Selected"
+InterceptLoadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+InterceptLoadBtn.Font = Enum.Font.GothamBold
+InterceptLoadBtn.TextSize = 11
+InterceptLoadBtn.AutoButtonColor = false
+InterceptLoadBtn.ZIndex = 3
+Instance.new("UICorner", InterceptLoadBtn).CornerRadius = UDim.new(0, 4)
+
+local InterceptToggle = Instance.new("TextButton", InterceptTab)
+InterceptToggle.Size = UDim2.new(0.4, -2, 0, 32)
+InterceptToggle.Position = UDim2.new(0.6, 2, 1, -36)
+InterceptToggle.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+InterceptToggle.BorderSizePixel = 0
+InterceptToggle.Text = "Block: ×"
+InterceptToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+InterceptToggle.Font = Enum.Font.GothamBold
+InterceptToggle.TextSize = 11
+InterceptToggle.AutoButtonColor = false
+InterceptToggle.ZIndex = 3
+Instance.new("UICorner", InterceptToggle).CornerRadius = UDim.new(0, 4)
+
+-- ==================== FORCE TAB ====================
+local ForceTab = Instance.new("Frame", ContentFrame)
+ForceTab.Size = UDim2.new(1, 0, 1, 0)
+ForceTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+ForceTab.BorderSizePixel = 0
+ForceTab.ZIndex = 2
+ForceTab.Visible = false
+Instance.new("UICorner", ForceTab).CornerRadius = UDim.new(0, 4)
+
+local ForceScroll = Instance.new("ScrollingFrame", ForceTab)
+ForceScroll.Size = UDim2.new(1, -8, 1, -45)
+ForceScroll.Position = UDim2.new(0, 4, 0, 4)
+ForceScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ForceScroll.BorderSizePixel = 0
+ForceScroll.ScrollBarThickness = 3
+ForceScroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+ForceScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+ForceScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ForceScroll.ZIndex = 3
+Instance.new("UICorner", ForceScroll).CornerRadius = UDim.new(0, 3)
+
+local ForceBox = Instance.new("TextBox", ForceScroll)
+ForceBox.Size = UDim2.new(1, -8, 1, -8)
+ForceBox.Position = UDim2.new(0, 4, 0, 4)
+ForceBox.BackgroundTransparency = 1
+ForceBox.Text = "-- Замените параметр на € для фаззинга --"
+ForceBox.TextColor3 = Color3.fromRGB(220, 220, 220)
+ForceBox.TextXAlignment = Enum.TextXAlignment.Left
+ForceBox.TextYAlignment = Enum.TextYAlignment.Top
+ForceBox.TextWrapped = true
+ForceBox.MultiLine = true
+ForceBox.ClearTextOnFocus = false
+ForceBox.Font = Enum.Font.Code
+ForceBox.TextSize = 10
+ForceBox.ZIndex = 3
+
+local ForceLoadBtn = Instance.new("TextButton", ForceTab)
+ForceLoadBtn.Size = UDim2.new(0.6, -6, 0, 32)
+ForceLoadBtn.Position = UDim2.new(0, 4, 1, -36)
+ForceLoadBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ForceLoadBtn.BorderSizePixel = 0
+ForceLoadBtn.Text = "Load Selected"
+ForceLoadBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ForceLoadBtn.Font = Enum.Font.GothamBold
+ForceLoadBtn.TextSize = 11
+ForceLoadBtn.AutoButtonColor = false
+ForceLoadBtn.ZIndex = 3
+Instance.new("UICorner", ForceLoadBtn).CornerRadius = UDim.new(0, 4)
+
+local ForceToggle = Instance.new("TextButton", ForceTab)
+ForceToggle.Size = UDim2.new(0.4, -2, 0, 32)
+ForceToggle.Position = UDim2.new(0.6, 2, 1, -36)
+ForceToggle.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+ForceToggle.BorderSizePixel = 0
+ForceToggle.Text = "Brute: ×"
+ForceToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ForceToggle.Font = Enum.Font.GothamBold
+ForceToggle.TextSize = 11
+ForceToggle.AutoButtonColor = false
+ForceToggle.ZIndex = 3
+Instance.new("UICorner", ForceToggle).CornerRadius = UDim.new(0, 4)
+
+-- ==================== SETTINGS TAB ====================
+local SettingsTab = Instance.new("Frame", ContentFrame)
+SettingsTab.Size = UDim2.new(1, 0, 1, 0)
+SettingsTab.BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+SettingsTab.BorderSizePixel = 0
+SettingsTab.ZIndex = 2
+SettingsTab.Visible = false
+Instance.new("UICorner", SettingsTab).CornerRadius = UDim.new(0, 4)
+
+local HookLabel = Instance.new("TextLabel", SettingsTab)
+HookLabel.Size = UDim2.new(1, -12, 0, 18)
+HookLabel.Position = UDim2.new(0, 6, 0, 4)
+HookLabel.BackgroundTransparency = 1
+HookLabel.Text = "Hooking Settings:"
+HookLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+HookLabel.TextXAlignment = Enum.TextXAlignment.Left
+HookLabel.Font = Enum.Font.GothamBold
+HookLabel.TextSize = 11
+HookLabel.ZIndex = 3
+
+local RemoteEventToggle = Instance.new("TextButton", SettingsTab)
+RemoteEventToggle.Size = UDim2.new(1, -12, 0, 26)
+RemoteEventToggle.Position = UDim2.new(0, 6, 0, 24)
+RemoteEventToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+RemoteEventToggle.BorderSizePixel = 0
+RemoteEventToggle.Text = "RemoteEvent (Outgoing)  ✓"
+RemoteEventToggle.TextColor3 = Color3.fromRGB(0, 200, 100)
+RemoteEventToggle.Font = Enum.Font.GothamBold
+RemoteEventToggle.TextSize = 10
+RemoteEventToggle.AutoButtonColor = false
+RemoteEventToggle.ZIndex = 3
+Instance.new("UICorner", RemoteEventToggle).CornerRadius = UDim.new(0, 4)
+
+local RemoteFunctionToggle = Instance.new("TextButton", SettingsTab)
+RemoteFunctionToggle.Size = UDim2.new(1, -12, 0, 26)
+RemoteFunctionToggle.Position = UDim2.new(0, 6, 0, 52)
+RemoteFunctionToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+RemoteFunctionToggle.BorderSizePixel = 0
+RemoteFunctionToggle.Text = "RemoteFunction (Outgoing)  ✓"
+RemoteFunctionToggle.TextColor3 = Color3.fromRGB(0, 200, 100)
+RemoteFunctionToggle.Font = Enum.Font.GothamBold
+RemoteFunctionToggle.TextSize = 10
+RemoteFunctionToggle.AutoButtonColor = false
+RemoteFunctionToggle.ZIndex = 3
+Instance.new("UICorner", RemoteFunctionToggle).CornerRadius = UDim.new(0, 4)
+
+local IncomingToggle = Instance.new("TextButton", SettingsTab)
+IncomingToggle.Size = UDim2.new(1, -12, 0, 26)
+IncomingToggle.Position = UDim2.new(0, 6, 0, 80)
+IncomingToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+IncomingToggle.BorderSizePixel = 0
+IncomingToggle.Text = "Incoming Events (Burp Style)  ✓"
+IncomingToggle.TextColor3 = Color3.fromRGB(0, 200, 100)
+IncomingToggle.Font = Enum.Font.GothamBold
+IncomingToggle.TextSize = 10
+IncomingToggle.AutoButtonColor = false
+IncomingToggle.ZIndex = 3
+Instance.new("UICorner", IncomingToggle).CornerRadius = UDim.new(0, 4)
+
+local MonitorToggle = Instance.new("TextButton", SettingsTab)
+MonitorToggle.Size = UDim2.new(1, -12, 0, 26)
+MonitorToggle.Position = UDim2.new(0, 6, 0, 108)
+MonitorToggle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MonitorToggle.BorderSizePixel = 0
+MonitorToggle.Text = "Monitor (Logging)  ✓"
+MonitorToggle.TextColor3 = Color3.fromRGB(0, 200, 100)
+MonitorToggle.Font = Enum.Font.GothamBold
+MonitorToggle.TextSize = 10
+MonitorToggle.AutoButtonColor = false
+MonitorToggle.ZIndex = 3
+Instance.new("UICorner", MonitorToggle).CornerRadius = UDim.new(0, 4)
+
+local LimitLabel = Instance.new("TextLabel", SettingsTab)
+LimitLabel.Size = UDim2.new(1, -12, 0, 18)
+LimitLabel.Position = UDim2.new(0, 6, 0, 142)
+LimitLabel.BackgroundTransparency = 1
+LimitLabel.Text = "Max Events Limit:"
+LimitLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+LimitLabel.TextXAlignment = Enum.TextXAlignment.Left
+LimitLabel.Font = Enum.Font.GothamBold
+LimitLabel.TextSize = 11
+LimitLabel.ZIndex = 3
+
+local LimitBox = Instance.new("TextBox", SettingsTab)
+LimitBox.Size = UDim2.new(0.65, -4, 0, 26)
+LimitBox.Position = UDim2.new(0, 6, 0, 162)
+LimitBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+LimitBox.BorderSizePixel = 0
+LimitBox.Text = "500"
+LimitBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+LimitBox.Font = Enum.Font.Gotham
+LimitBox.TextSize = 11
+LimitBox.ZIndex = 3
+Instance.new("UICorner", LimitBox).CornerRadius = UDim.new(0, 4)
+
+local LimitSetBtn = Instance.new("TextButton", SettingsTab)
+LimitSetBtn.Size = UDim2.new(0.35, -8, 0, 26)
+LimitSetBtn.Position = UDim2.new(0.65, 2, 0, 162)
+LimitSetBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+LimitSetBtn.BorderSizePixel = 0
+LimitSetBtn.Text = "Set"
+LimitSetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+LimitSetBtn.Font = Enum.Font.GothamBold
+LimitSetBtn.TextSize = 11
+LimitSetBtn.AutoButtonColor = false
+LimitSetBtn.ZIndex = 3
+Instance.new("UICorner", LimitSetBtn).CornerRadius = UDim.new(0, 4)
+
+-- ==================== TABS BAR ====================
+local TabsBar = Instance.new("Frame", Main)
+TabsBar.Size = UDim2.new(1, -10, 0, 26)
+TabsBar.Position = UDim2.new(0, 5, 1, -30)
+TabsBar.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+TabsBar.BorderSizePixel = 0
+TabsBar.ZIndex = 2
+Instance.new("UICorner", TabsBar).CornerRadius = UDim.new(0, 4)
+
+local TabsList = Instance.new("UIListLayout", TabsBar)
+TabsList.FillDirection = Enum.FillDirection.Horizontal
+TabsList.Padding = UDim.new(0, 1)
+TabsList.VerticalAlignment = Enum.VerticalAlignment.Center
+TabsList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+local function createTabBtn(name, target)
+    local btn = Instance.new("TextButton", TabsBar)
+    btn.Size = UDim2.new(0, 52, 0, 20)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    btn.BorderSizePixel = 0
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 9
+    btn.AutoButtonColor = false
+    btn.ZIndex = 3
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 3)
+    btn.MouseButton1Click:Connect(function()
+        InfoTab.Visible = false
+        NoteUI.tab.Visible = false
+        RepeaterTab.Visible = false
+        MonitorTab.Visible = false
+        InterceptTab.Visible = false
+        ForceTab.Visible = false
+        SettingsTab.Visible = false
+        target.Visible = true
+        for _, c in pairs(TabsBar:GetChildren()) do
+            if c:IsA("TextButton") then
+                c.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+                c.TextColor3 = Color3.fromRGB(180, 180, 180)
+            end
+        end
+        btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+    return btn
+end
+
+local infoTabBtn = createTabBtn("Info", InfoTab)
+local noteTabBtn = createTabBtn("Note", NoteUI.tab)
+local repeaterTabBtn = createTabBtn("Repeater", RepeaterTab)
+local monitorTabBtn = createTabBtn("Monitor", MonitorTab)
+local interceptTabBtn = createTabBtn("Intercept", InterceptTab)
+local forceTabBtn = createTabBtn("Forse", ForceTab)
+local settingsTabBtn = createTabBtn("Settings", SettingsTab)
+
+infoTabBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+infoTabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+-- ==================== SERVICES ====================
+local SERVICES = {
+    Workspace = true, ReplicatedStorage = true, ReplicatedFirst = true,
+    ServerScriptService = true, ServerStorage = true,
+    StarterGui = true, StarterPack = true, StarterPlayer = true,
+    SoundService = true, Lighting = true, Chat = true,
+    LocalizationService = true, Players = true, RunService = true,
+    TweenService = true, HttpService = true, TeleportService = true,
+    MarketplaceService = true, DataStoreService = true,
+    BadgeService = true, GroupService = true, TextService = true,
+    UserInputService = true, ContextActionService = true,
+    GuiService = true, HapticService = true, VRService = true,
+    PathfindingService = true, PhysicsService = true,
+    CollectionService = true, ContentProvider = true,
+    InsertService = true, JointService = true, LogService = true,
+    MessageBusService = true, NetworkClient = true, NetworkServer = true,
+    NotificationService = true, PhysicsSettings = true,
+    PolicyService = true, ProximityPromptService = true,
+    RbxAnalyticsService = true, ScriptContext = true,
+    ScriptService = true, Selection = true, SocialService = true,
+    Stats = true, StudioService = true, TextChatService = true,
+    TouchInputService = true, UserService = true, VoiceChatService = true
+}
+
+local function buildPath(obj)
+    if not obj then return "nil" end
+    if obj == game then return "game" end
+    local parts = {}
+    local current = obj
+    while current and current ~= game do
+        table.insert(parts, 1, current.Name)
+        current = current.Parent
+    end
+    if #parts == 0 then return "game" end
+    local first = parts[1]
+    local result
+    if first == "Workspace" then
+        result = "workspace"
+    elseif SERVICES[first] then
+        result = 'game:GetService("' .. first .. '")'
+    else
+        if first:match("^%a[%w_]*$") then
+            result = "game." .. first
+        else
+            result = 'game["' .. first .. '"]'
+        end
+    end
+    for i = 2, #parts do
+        local name = parts[i]
+        if name:match("^%a[%w_]*$") then
+            result = result .. "." .. name
+        else
+            result = result .. '["' .. name .. '"]'
+        end
+    end
+    return result
+end
+
+-- ==================== FMT ====================
+local function fmt(v, depth)
+    depth = depth or 0
+    if depth > 2 then return "..." end
+    local t = type(v)
+    if t == "string" then
+        if #v > 80 then return string.format("%q", v:sub(1, 80)) end
+        return string.format("%q", v)
+    elseif t == "number" then
+        if v == math.floor(v) and math.abs(v) < 1e9 then return tostring(v) end
+        return string.format("%.4f", v)
+    elseif t == "boolean" then
+        return tostring(v)
+    elseif t == "nil" then
+        return "nil"
+    elseif t == "Vector3" then
+        return string.format("Vector3.new(%.2f, %.2f, %.2f)", v.X, v.Y, v.Z)
+    elseif t == "CFrame" then
+        local p = v.Position
+        return string.format("CFrame.new(%.2f, %.2f, %.2f)", p.X, p.Y, p.Z)
+    elseif t == "Color3" then
+        return string.format("Color3.fromRGB(%d, %d, %d)", math.floor(v.R*255), math.floor(v.G*255), math.floor(v.B*255))
+    elseif t == "EnumItem" then
+        return tostring(v)
+    elseif t == "Instance" then
+        return buildPath(v)
+    elseif t == "table" then
+        local count = 0
+        local maxN = 0
+        for k in pairs(v) do
+            count = count + 1
+            if type(k) == "number" and k > maxN then maxN = k end
+            if count > 10 then return "{...}" end
+        end
+        local parts = {}
+        for i = 1, maxN do
+            if v[i] ~= nil then table.insert(parts, fmt(v[i], depth + 1)) end
+        end
+        for k, val in pairs(v) do
+            if not (type(k) == "number" and k >= 1 and k == math.floor(k) and k <= maxN) then
+                local keyStr
+                if type(k) == "string" and k:match("^%a[%w_]*$") then keyStr = k
+                else keyStr = "[" .. fmt(k, depth + 1) .. "]" end
+                table.insert(parts, keyStr .. " = " .. fmt(val, depth + 1))
+                if #parts > 12 then break end
+            end
+        end
+        return "{" .. table.concat(parts, ", ") .. "}"
+    end
+    return tostring(v)
+end
+
+-- ==================== GENERATE ====================
+local function generateCode(e)
+    local path = buildPath(e.event)
+    local argsStr = {}
+    for i = 1, #e.args do
+        table.insert(argsStr, "    " .. fmt(e.args[i]))
+    end
+    local code = "-- Type: " .. e.kind .. "\n-- Generated by BurpEvent\n\n"
+    if e.kind == "IncomingEvent" then
+        code = code .. "local Event = " .. path .. "\nEvent.OnClientEvent:Connect(function(\n" .. table.concat(argsStr, ",\n") .. "\nend)"
+    elseif e.kind == "IncomingFunction" then
+        code = code .. "local Event = " .. path .. "\nEvent.OnClientInvoke = function(\n" .. table.concat(argsStr, ",\n") .. "\nend"
+    elseif e.isFunction then
+        code = code .. "local Event = " .. path .. "\nEvent:InvokeServer(\n" .. table.concat(argsStr, ",\n") .. ")"
+    else
+        code = code .. "local Event = " .. path .. "\nEvent:FireServer(\n" .. table.concat(argsStr, ",\n") .. ")"
+    end
+    return code
+end
+
+local function generateInfo(e)
+    return "Type: " .. e.kind .. "\nName: " .. e.name .. "\nPath: " .. buildPath(e.event) .. "\nArgs: " .. #e.args
+end
+
+-- ==================== MONITOR LOGS ====================
+local monitorLogs = {}
+
+local function addLog(kind, name, detail, color)
+    if not monitorActive then return end
+    local entry = {
+        kind = kind,
+        name = name,
+        detail = detail or "",
+        time = os.date("%H:%M:%S"),
+        color = color or Color3.fromRGB(180, 180, 180),
+        full = "",
+    }
+    entry.full = "[" .. entry.time .. "] [" .. kind .. "] " .. name .. (detail ~= "" and ("\n" .. detail) or "")
+    table.insert(monitorLogs, entry)
+    if #monitorLogs > MAX_LOGS then
+        table.remove(monitorLogs, 1)
+    end
+    -- UI
+    local row = Instance.new("Frame", monScroll)
+    row.Size = UDim2.new(1, -4, 0, 24)
+    row.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    row.BorderSizePixel = 0
+    row.ZIndex = 4
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 3)
+
+    local lbl = Instance.new("TextLabel", row)
+    lbl.Size = UDim2.new(1, -50, 1, 0)
+    lbl.Position = UDim2.new(0, 6, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = "[" .. entry.time .. "] [" .. kind .. "] " .. name
+    lbl.TextColor3 = color
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 9
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextTruncate = Enum.TextTruncate.AtEnd
+    lbl.ZIndex = 5
+
+    local cpy = Instance.new("TextButton", row)
+    cpy.Size = UDim2.new(0, 40, 0, 18)
+    cpy.Position = UDim2.new(1, -44, 0, 3)
+    cpy.BackgroundColor3 = Color3.fromRGB(50, 80, 50)
+    cpy.BorderSizePixel = 0
+    cpy.Text = "copy"
+    cpy.TextColor3 = Color3.fromRGB(255, 255, 255)
+    cpy.Font = Enum.Font.Gotham
+    cpy.TextSize = 9
+    cpy.AutoButtonColor = false
+    cpy.ZIndex = 5
+    Instance.new("UICorner", cpy).CornerRadius = UDim.new(0, 3)
+    cpy.MouseButton1Click:Connect(function()
+        copyToClipboard(entry.full)
+        cpy.Text = "OK"
+        task.wait(0.5)
+        cpy.Text = "copy"
+    end)
+end
+
+-- ==================== NOTE QUEUE ====================
+local noteEvents = {}
+local noteButtonInstances = {}
+local noteSelectedIndex = nil
+local noteQueue = {}
+local noteCurrentCode = ""
+local noteSpamActive = false
+local noteSpamThread = nil
+local noteBlocked = {}
+
+local function noteShowEventInfo(index)
+    local e = noteEvents[index]
+    if not e then return end
+    noteCurrentCode = generateCode(e)
+    NoteUI.rightText.Text = noteCurrentCode
+end
+
+task.spawn(function()
+    while Screen.Parent do
+        local processed = 0
+        while #noteQueue > 0 and processed < 5 do
+            local evt = table.remove(noteQueue, 1)
+            if evt then
+                local skip = false
+                if interceptActive and evt.name == interceptTargetName then skip = true end
+                if noteBlocked[evt.name] then skip = true end
+                if not skip then
+                    table.insert(noteEvents, evt)
+                    local idx = #noteEvents
+
+                    local btn = Instance.new("TextButton", NoteUI.leftPanel)
+                    btn.Size = UDim2.new(1, -4, 0, 20)
+                    if evt.kind == "IncomingEvent" then
+                        btn.BackgroundColor3 = Color3.fromRGB(40, 140, 200)
+                    elseif evt.kind == "IncomingFunction" then
+                        btn.BackgroundColor3 = Color3.fromRGB(40, 200, 140)
+                    elseif evt.isFunction then
+                        btn.BackgroundColor3 = Color3.fromRGB(140, 80, 200)
+                    else
+                        btn.BackgroundColor3 = Color3.fromRGB(200, 110, 40)
+                    end
+                    btn.BorderSizePixel = 0
+                    btn.Text = "#" .. idx .. " " .. evt.name
+                    btn.TextColor3 = Color3.fromRGB(230, 230, 230)
+                    btn.TextXAlignment = Enum.TextXAlignment.Left
+                    btn.Font = Enum.Font.Gotham
+                    btn.TextSize = 9
+                    btn.AutoButtonColor = false
+                    btn.ZIndex = 3
+                    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 3)
+                    table.insert(noteButtonInstances, btn)
+
+                    btn.MouseButton1Click:Connect(function()
+                        noteSelectedIndex = idx
+                        for _, c in ipairs(noteButtonInstances) do
+                            if c and c.Parent then
+                                local num = tonumber(c.Text:match("#(%d+)"))
+                                local evt2 = num and noteEvents[num]
+                                if evt2 then
+                                    if evt2.kind == "IncomingEvent" then
+                                        c.BackgroundColor3 = Color3.fromRGB(40, 140, 200)
+                                    elseif evt2.kind == "IncomingFunction" then
+                                        c.BackgroundColor3 = Color3.fromRGB(40, 200, 140)
+                                    elseif evt2.isFunction then
+                                        c.BackgroundColor3 = Color3.fromRGB(140, 80, 200)
+                                    else
+                                        c.BackgroundColor3 = Color3.fromRGB(200, 110, 40)
+                                    end
+                                end
+                            end
+                        end
+                        btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                        noteShowEventInfo(idx)
+                    end)
+
+                    if #noteEvents > MAX_EVENTS then
+                        table.remove(noteEvents, 1)
+                        local oldBtn = table.remove(noteButtonInstances, 1)
+                        if oldBtn and oldBtn.Parent then oldBtn:Destroy() end
+                    end
+                end
+            end
+            processed = processed + 1
+        end
+        task.wait(0.2)
+    end
+end)
+
+-- ==================== HOOKS ====================
+local mt = getrawmetatable(game)
+local oldNamecall = mt.__namecall
+setreadonly(mt, false)
+
+mt.__namecall = newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+
+    if method == "FireServer" and hookRemoteEvent and self.ClassName == "RemoteEvent" then
+        if interceptActive and self.Name == interceptTargetName then
+            addLog("BLOCKED", self.Name, "Intercept blocked FireServer", Color3.fromRGB(255, 80, 80))
+            return
+        end
+        if #noteQueue < MAX_EVENTS then
+            table.insert(noteQueue, {
+                name = self.Name, event = self, args = {...}, isFunction = false, kind = "RemoteEvent"
+            })
+        end
+        if monitorActive then
+            addLog("FireServer", self.Name, "Path: " .. buildPath(self), Color3.fromRGB(200, 140, 80))
+        end
+    elseif method == "InvokeServer" and hookRemoteFunction and self.ClassName == "RemoteFunction" then
+        if interceptActive and self.Name == interceptTargetName then
+            addLog("BLOCKED", self.Name, "Intercept blocked InvokeServer", Color3.fromRGB(255, 80, 80))
+            return nil
+        end
+        if #noteQueue < MAX_EVENTS then
+            table.insert(noteQueue, {
+                name = self.Name, event = self, args = {...}, isFunction = true, kind = "RemoteFunction"
+            })
+        end
+        if monitorActive then
+            addLog("InvokeServer", self.Name, "Path: " .. buildPath(self), Color3.fromRGB(160, 100, 200))
+        end
+        -- Логируем ответ
+        local result = oldNamecall(self, ...)
+        if monitorActive then
+            addLog("InvokeReply", self.Name, "Result: " .. fmt(result), Color3.fromRGB(100, 200, 160))
+        end
+        return result
+    end
+
+    return oldNamecall(self, ...)
+end)
+
+setreadonly(mt, true)
+
+-- ==================== INCOMING HOOKS ====================
+local function hookIncomingEvent(instance)
+    if instance.ClassName == "RemoteEvent" then
+        pcall(function()
+            instance.OnClientEvent:Connect(function(...)
+                if not hookIncoming then return end
+                if interceptActive and instance.Name == interceptTargetName then return end
+                if #noteQueue < MAX_EVENTS then
+                    table.insert(noteQueue, {
+                        name = instance.Name, event = instance, args = {...}, isFunction = false, kind = "IncomingEvent"
+                    })
+                end
+                if monitorActive then
+                    addLog("Incoming", instance.Name, "Path: " .. buildPath(instance), Color3.fromRGB(80, 160, 220))
+                end
+            end)
+        end)
+    elseif instance.ClassName == "RemoteFunction" then
+        pcall(function()
+            local oldCallback = instance.OnClientInvoke
+            if type(oldCallback) ~= "function" then
+                instance.OnClientInvoke = function(...)
+                    if not hookIncoming then return end
+                    if interceptActive and instance.Name == interceptTargetName then return end
+                    if #noteQueue < MAX_EVENTS then
+                        table.insert(noteQueue, {
+                            name = instance.Name, event = instance, args = {...}, isFunction = true, kind = "IncomingFunction"
+                        })
+                    end
+                    if monitorActive then
+                        addLog("IncomingFunc", instance.Name, "Path: " .. buildPath(instance), Color3.fromRGB(80, 200, 160))
+                    end
+                end
+            end
+        end)
+    end
+end
+
+for _, v in ipairs(game:GetDescendants()) do
+    hookIncomingEvent(v)
+end
+game.DescendantAdded:Connect(hookIncomingEvent)
+
+-- ==================== UNBLOCK WINDOW ====================
+local function openUnblockWindow(blockedTable, title, onUnblock)
+    if Screen:FindFirstChild("UnblockWindow") then Screen.UnblockWindow:Destroy() end
+    local win = Instance.new("Frame", Screen)
+    win.Name = "UnblockWindow"
+    win.Size = UDim2.new(0, 260, 0, 260)
+    win.Position = UDim2.new(0.5, -130, 0.5, -130)
+    win.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    win.BorderSizePixel = 0
+    win.Active = true
+    win.Draggable = true
+    win.ZIndex = 200
+    Instance.new("UICorner", win).CornerRadius = UDim.new(0, 6)
+    local wStroke = Instance.new("UIStroke", win)
+    wStroke.Color = Color3.fromRGB(60, 60, 60)
+    wStroke.Thickness = 1
+    local wTop = Instance.new("Frame", win)
+    wTop.Size = UDim2.new(1, 0, 0, 24)
+    wTop.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    wTop.BorderSizePixel = 0
+    wTop.ZIndex = 201
+    local wTitle = Instance.new("TextLabel", wTop)
+    wTitle.Text = "Unblock - " .. title
+    wTitle.Size = UDim2.new(1, -30, 1, 0)
+    wTitle.Position = UDim2.new(0, 8, 0, 0)
+    wTitle.BackgroundTransparency = 1
+    wTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    wTitle.TextXAlignment = Enum.TextXAlignment.Left
+    wTitle.Font = Enum.Font.Gotham
+    wTitle.TextSize = 11
+    wTitle.ZIndex = 202
+    local wClose = Instance.new("TextButton", wTop)
+    wClose.Text = "×"
+    wClose.Size = UDim2.new(0, 22, 0, 22)
+    wClose.Position = UDim2.new(1, -24, 0, 1)
+    wClose.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    wClose.BorderSizePixel = 0
+    wClose.TextColor3 = Color3.fromRGB(255, 255, 255)
+    wClose.Font = Enum.Font.Gotham
+    wClose.TextSize = 14
+    wClose.AutoButtonColor = false
+    wClose.ZIndex = 203
+    Instance.new("UICorner", wClose).CornerRadius = UDim.new(0, 3)
+    wClose.MouseButton1Click:Connect(function() win:Destroy() end)
+    local scroll = Instance.new("ScrollingFrame", win)
+    scroll.Size = UDim2.new(1, -12, 1, -36)
+    scroll.Position = UDim2.new(0, 6, 0, 30)
+    scroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 3
+    scroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.ZIndex = 201
+    Instance.new("UICorner", scroll).CornerRadius = UDim.new(0, 3)
+    Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 2)
+
+    local count = 0
+    for name, _ in pairs(blockedTable) do
+        count = count + 1
+        local b = Instance.new("TextButton", scroll)
+        b.Size = UDim2.new(1, -4, 0, 24)
+        b.BackgroundColor3 = Color3.fromRGB(30, 60, 80)
+        b.BorderSizePixel = 0
+        b.Text = "✕ " .. name
+        b.TextColor3 = Color3.fromRGB(220, 220, 220)
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.Font = Enum.Font.Gotham
+        b.TextSize = 10
+        b.AutoButtonColor = false
+        b.ZIndex = 202
+        Instance.new("UICorner", b).CornerRadius = UDim.new(0, 3)
+        b.MouseButton1Click:Connect(function()
+            blockedTable[name] = nil
+            if onUnblock then pcall(onUnblock, name) end
+            b:Destroy()
+            count = count - 1
+            if count <= 0 then
+                task.wait(0.1)
+                if win.Parent then win:Destroy() end
+            end
+        end)
+    end
+    if count == 0 then
+        local lbl = Instance.new("TextLabel", scroll)
+        lbl.Size = UDim2.new(1, -4, 0, 30)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = "Нет заблокированных"
+        lbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 10
+        lbl.ZIndex = 202
+    end
+end
+
+-- ==================== EXECUTE ====================
+local function executeEventObject(e)
+    if not e or not e.event or not e.event.Parent then return false end
+    pcall(function()
+        if e.kind == "IncomingEvent" then
+            if e.event.ClassName == "RemoteEvent" then
+                for _, conn in ipairs(getconnections(e.event.OnClientEvent)) do
+                    conn:Fire(unpack(e.args))
+                end
+            end
+        elseif e.kind == "IncomingFunction" then
+            if type(e.event.OnClientInvoke) == "function" then
+                e.event.OnClientInvoke(unpack(e.args))
+            end
+        elseif e.isFunction then
+            e.event:InvokeServer(unpack(e.args))
+        else
+            e.event:FireServer(unpack(e.args))
+        end
+    end)
+    return true
+end
+
+-- ==================== REPEATER BUTTONS ====================
+LoadSelectedBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        LoadSelectedBtn.Text = "No Event"
+        task.wait(0.6)
+        LoadSelectedBtn.Text = "Load"
+        return
+    end
+    local e = noteEvents[noteSelectedIndex]
+    RepeaterBox.Text = generateCode(e)
+    LoadSelectedBtn.Text = "Loaded!"
+    task.wait(0.6)
+    LoadSelectedBtn.Text = "Load"
+end)
+
+RepeaterClearBtn.MouseButton1Click:Connect(function()
+    RepeaterBox.Text = ""
+    RepeaterClearBtn.Text = "Cleared"
+    task.wait(0.5)
+    RepeaterClearBtn.Text = "Clear"
+end)
+
+-- Execute: работает и без выбора из Note — можно писать свой код вручную
+ExecuteBtn.MouseButton1Click:Connect(function()
+    local txt = RepeaterBox.Text
+    if txt == "" or txt == "-- Впиши свой код или Load из Note --" then
+        -- Если поле пустое — пробуем использовать выбранный эвент
+        if noteSelectedIndex and noteEvents[noteSelectedIndex] then
+            executeEventObject(noteEvents[noteSelectedIndex])
+            ExecuteBtn.Text = "Executed (Note)"
+            task.wait(0.6)
+            ExecuteBtn.Text = "Execute"
+            return
+        end
+        ExecuteBtn.Text = "Empty!"
+        task.wait(0.6)
+        ExecuteBtn.Text = "Execute"
+        return
+    end
+    -- Пытаемся выполнить пользовательский код через loadstring
+    local fn, err = nil, nil
+    if loadstring then
+        fn, err = loadstring(txt, "RepeaterBox")
+    elseif load then
+        fn, err = load(txt, "RepeaterBox")
+    end
+    if fn then
+        local ok, runErr = pcall(fn)
+        if ok then
+            ExecuteBtn.Text = "OK"
+        else
+            ExecuteBtn.Text = "Err"
+            addLog("RepeaterErr", "UserCode", tostring(runErr), Color3.fromRGB(255, 80, 80))
+            warn("[Repeater] " .. tostring(runErr))
+        end
+    else
+        -- Фоллбэк на выбранный из Note
+        if noteSelectedIndex and noteEvents[noteSelectedIndex] then
+            executeEventObject(noteEvents[noteSelectedIndex])
+            ExecuteBtn.Text = "Executed"
+        else
+            ExecuteBtn.Text = "No loadstring"
+            if err then warn("[Repeater] " .. tostring(err)) end
+        end
+    end
+    task.wait(0.6)
+    ExecuteBtn.Text = "Execute"
+end)
+
+-- ==================== INTERCEPT ====================
+InterceptLoadBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        InterceptText.Text = "Сначала выберите евент в Note!"
+        return
+    end
+    local e = noteEvents[noteSelectedIndex]
+    interceptTargetName = e.name
+    InterceptText.Text = "Загружен таргет:\nИмя: " .. e.name .. "\nПуть: " .. buildPath(e.event) .. "\n\nНажмите тумблер Block."
+    InterceptLoadBtn.Text = "Loaded!"
+    task.wait(0.6)
+    InterceptLoadBtn.Text = "Load Selected"
+end)
+
+InterceptToggle.MouseButton1Click:Connect(function()
+    interceptActive = not interceptActive
+    if interceptActive then
+        InterceptToggle.Text = "Block: ✓"
+        InterceptToggle.BackgroundColor3 = Color3.fromRGB(30, 100, 30)
+        InterceptText.Text = "Активна блокировка: " .. (interceptTargetName ~= "" and interceptTargetName or "(не выбран)")
+    else
+        InterceptToggle.Text = "Block: ×"
+        InterceptToggle.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+        InterceptText.Text = "Выберите евент в Note и нажмите Load"
+    end
+end)
+
+-- ==================== FORCE ====================
+ForceLoadBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        ForceBox.Text = "-- Ошибка: выберите евент в Note --"
+        return
+    end
+    local e = noteEvents[noteSelectedIndex]
+    bruteEventData = e
+    local argsStr = {}
+    for i = 1, #e.args do
+        if i == 1 then
+            table.insert(argsStr, "    € -- замените на €")
+        else
+            table.insert(argsStr, "    " .. fmt(e.args[i]))
+        end
+    end
+    local code = "-- Brute Target: " .. e.name .. "\n\n"
+    if e.isFunction then
+        code = code .. buildPath(e.event) .. ":InvokeServer(\n" .. table.concat(argsStr, ",\n") .. "\n)"
+    else
+        code = code .. buildPath(e.event) .. ":FireServer(\n" .. table.concat(argsStr, ",\n") .. "\n)"
+    end
+    ForceBox.Text = code
+    ForceLoadBtn.Text = "Loaded!"
+    task.wait(0.6)
+    ForceLoadBtn.Text = "Load Selected"
+end)
+
+ForceToggle.MouseButton1Click:Connect(function()
+    bruteActive = not bruteActive
+    if bruteActive then
+        ForceToggle.Text = "Brute: ✓"
+        ForceToggle.BackgroundColor3 = Color3.fromRGB(30, 100, 30)
+        local FOOD = {
+            "Apple","apple","Banana","banana","Orange","orange","Pear","Grape","Peach","Cherry",
+            "Strawberry","Blueberry","Watermelon","Melon","Pineapple","Mango","Kiwi","Lemon","Lime","Coconut",
+            "Carrot","Potato","Onion","Garlic","Pepper","Cucumber","Broccoli","Spinach","Lettuce","Pumpkin",
+            "Chicken","Beef","Pork","Lamb","Turkey","Duck","Fish","Salmon","Tuna","Shrimp","Bacon","Ham","Steak",
+            "Milk","Cheese","Butter","Yogurt","Cream","IceCream",
+            "Bread","Toast","Bagel","Croissant","Donut","Cake","Cookie","Cupcake","Pie","Pancake","Waffle","Muffin",
+            "Chocolate","Candy","Caramel","Pretzel","Cracker","Cereal","Granola",
+            "Pasta","Spaghetti","Noodle","Rice","Pizza","Burger","Sandwich","Taco","Burrito","Sushi","Ramen","Soup","Salad",
+            "Honey","Jam","Peanut","Almond","Cashew","Walnut",
+            "Water","Juice","Soda","Cola","Tea","Coffee","Beer","Wine","Whiskey","Vodka","Rum",
+            "Smoothie","Milkshake","Lemonade","Cocoa",
+            "Dumpling","Curry","Kebab","Hummus","Pita","Naan","Tortilla","Lasagna","Ravioli","Tiramisu","Cheesecake","Gelato",
+        }
+        local testValues = {
+            1, 0, -1, 100, 9999, 999999, -9999, 3.14, 0.5,
+            Vector3.new(0,50,0), Vector3.new(999,999,999), Vector3.new(-50,0,50),
+            "admin","root","test","true","false","nil","null",
+        }
+        for _, w in ipairs(FOOD) do table.insert(testValues, w) end
+
+        task.spawn(function()
+            while bruteActive and bruteEventData and bruteEventData.event and bruteEventData.event.Parent do
+                for i, val in ipairs(testValues) do
+                    if not bruteActive then break end
+                    pcall(function()
+                        local copiedArgs = {}
+                        for ai, av in ipairs(bruteEventData.args) do
+                            copiedArgs[ai] = (ai == 1) and val or av
+                        end
+                        if bruteEventData.isFunction then
+                            bruteEventData.event:InvokeServer(unpack(copiedArgs))
+                        else
+                            bruteEventData.event:FireServer(unpack(copiedArgs))
+                        end
+                    end)
+                    task.wait(0.15)
+                end
+                task.wait(0.5)
+            end
+        end)
+    else
+        ForceToggle.Text = "Brute: ×"
+        ForceToggle.BackgroundColor3 = Color3.fromRGB(100, 30, 30)
+        bruteActive = false
+    end
+end)
+
+-- ==================== NOTE BUTTONS ====================
+NoteUI.FireBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        NoteUI.FireBtn.Text = "Нет"; task.wait(0.6); NoteUI.FireBtn.Text = "Fire"; return
+    end
+    executeEventObject(noteEvents[noteSelectedIndex])
+    NoteUI.FireBtn.Text = "OK"; task.wait(0.5); NoteUI.FireBtn.Text = "Fire"
+end)
+
+NoteUI.CopyBtn.MouseButton1Click:Connect(function()
+    if noteCurrentCode == "" then
+        NoteUI.CopyBtn.Text = "Нет"; task.wait(0.6); NoteUI.CopyBtn.Text = "Copy"; return
+    end
+    local ok = copyToClipboard(noteCurrentCode)
+    NoteUI.CopyBtn.Text = ok and "OK" or "No"
+    task.wait(0.5); NoteUI.CopyBtn.Text = "Copy"
+end)
+
+NoteUI.SpamBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        NoteUI.SpamBtn.Text = "Нет"; task.wait(0.6); NoteUI.SpamBtn.Text = "Spam"; return
+    end
+    noteSpamActive = not noteSpamActive
+    if noteSpamActive then
+        NoteUI.SpamBtn.Text = "ON"
+        NoteUI.SpamBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+        noteSpamThread = task.spawn(function()
+            while noteSpamActive do
+                local ev = noteEvents[noteSelectedIndex]
+                if ev and ev.event and ev.event.Parent then
+                    executeEventObject(ev)
+                end
+                task.wait()
+            end
+        end)
+    else
+        NoteUI.SpamBtn.Text = "Spam"
+        NoteUI.SpamBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        if noteSpamThread then task.cancel(noteSpamThread) noteSpamThread = nil end
+    end
+end)
+
+NoteUI.ClearBtn.MouseButton1Click:Connect(function()
+    noteSpamActive = false
+    if noteSpamThread then task.cancel(noteSpamThread) noteSpamThread = nil end
+    NoteUI.SpamBtn.Text = "Spam"
+    NoteUI.SpamBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    for _, c in ipairs(noteButtonInstances) do
+        if c and c.Parent then c:Destroy() end
+    end
+    noteEvents = {}
+    noteButtonInstances = {}
+    noteSelectedIndex = nil
+    noteQueue = {}
+    noteCurrentCode = ""
+    NoteUI.rightText.Text = "-- выбери --"
+    NoteUI.ClearBtn.Text = "OK"; task.wait(0.6); NoteUI.ClearBtn.Text = "Clear"
+end)
+
+NoteUI.BlockBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        NoteUI.BlockBtn.Text = "Нет"; task.wait(0.6); NoteUI.BlockBtn.Text = "Block"; return
+    end
+    local e = noteEvents[noteSelectedIndex]
+    if not e then return end
+    noteBlocked[e.name] = true
+    for _, c in ipairs(noteButtonInstances) do
+        if c and c.Parent then
+            local num = tonumber(c.Text:match("#(%d+)"))
+            local evt2 = num and noteEvents[num]
+            if evt2 and evt2.name == e.name then c:Destroy() end
+        end
+    end
+    local newQ = {}
+    for _, evt in ipairs(noteQueue) do
+        if evt.name ~= e.name then table.insert(newQ, evt) end
+    end
+    noteQueue = newQ
+    noteSelectedIndex = nil; noteCurrentCode = ""
+    NoteUI.rightText.Text = "-- " .. e.name .. " скрыт (Note.Block) --"
+    NoteUI.BlockBtn.Text = "OK"; task.wait(0.6); NoteUI.BlockBtn.Text = "Block"
+end)
+
+NoteUI.UnblockBtn.MouseButton1Click:Connect(function()
+    local list = {}
+    for name, _ in pairs(noteBlocked) do list[name] = true end
+    openUnblockWindow(list, "Note.Block", function(name)
+        noteBlocked[name] = nil
+    end)
+end)
+
+NoteUI.CopyInfoBtn.MouseButton1Click:Connect(function()
+    if not noteSelectedIndex or not noteEvents[noteSelectedIndex] then
+        NoteUI.CopyInfoBtn.Text = "Нет"; task.wait(0.6); NoteUI.CopyInfoBtn.Text = "CopyInfo"; return
+    end
+    local ok = copyToClipboard(generateInfo(noteEvents[noteSelectedIndex]))
+    NoteUI.CopyInfoBtn.Text = ok and "OK" or "No"
+    task.wait(0.5); NoteUI.CopyInfoBtn.Text = "CopyInfo"
+end)
+
+-- Поиск по эвентам в Note
+NoteUI.findBtn.MouseButton1Click:Connect(function()
+    local query = string.lower(NoteUI.searchBox.Text)
+    if query == "" then
+        for _, c in ipairs(noteButtonInstances) do
+            if c and c.Parent then c.Visible = true end
+        end
+        return
+    end
+    for _, c in ipairs(noteButtonInstances) do
+        if c and c.Parent then
+            local num = tonumber(c.Text:match("#(%d+)"))
+            local evt = num and noteEvents[num]
+            if evt then
+                c.Visible = string.find(string.lower(evt.name), query, 1, true) ~= nil
+            end
+        end
+    end
+end)
+
+-- ==================== MONITOR BUTTONS ====================
+monClearBtn.MouseButton1Click:Connect(function()
+    monitorLogs = {}
+    for _, c in ipairs(monScroll:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+    monClearBtn.Text = "OK"
+    task.wait(0.5)
+    monClearBtn.Text = "Clear"
+end)
+
+monFindBtn.MouseButton1Click:Connect(function()
+    local query = string.lower(monSearchBox.Text)
+    if query == "" then
+        for _, c in ipairs(monScroll:GetChildren()) do
+            if c:IsA("Frame") then c.Visible = true end
+        end
+        return
+    end
+    for _, c in ipairs(monScroll:GetChildren()) do
+        if c:IsA("Frame") then
+            local lbl = c:FindFirstChildOfClass("TextLabel")
+            if lbl then
+                c.Visible = string.find(string.lower(lbl.Text), query, 1, true) ~= nil
+            end
+        end
+    end
+end)
+
+-- ==================== SETTINGS ====================
+RemoteEventToggle.MouseButton1Click:Connect(function()
+    hookRemoteEvent = not hookRemoteEvent
+    RemoteEventToggle.Text = "RemoteEvent (Outgoing)  " .. (hookRemoteEvent and "✓" or "×")
+    RemoteEventToggle.TextColor3 = hookRemoteEvent and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+end)
+
+RemoteFunctionToggle.MouseButton1Click:Connect(function()
+    hookRemoteFunction = not hookRemoteFunction
+    RemoteFunctionToggle.Text = "RemoteFunction (Outgoing)  " .. (hookRemoteFunction and "✓" or "×")
+    RemoteFunctionToggle.TextColor3 = hookRemoteFunction and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+end)
+
+IncomingToggle.MouseButton1Click:Connect(function()
+    hookIncoming = not hookIncoming
+    IncomingToggle.Text = "Incoming Events (Burp Style)  " .. (hookIncoming and "✓" or "×")
+    IncomingToggle.TextColor3 = hookIncoming and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+end)
+
+MonitorToggle.MouseButton1Click:Connect(function()
+    monitorActive = not monitorActive
+    MonitorToggle.Text = "Monitor (Logging)  " .. (monitorActive and "✓" or "×")
+    MonitorToggle.TextColor3 = monitorActive and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(200, 50, 50)
+end)
+
+LimitSetBtn.MouseButton1Click:Connect(function()
+    local val = tonumber(LimitBox.Text)
+    if val and val > 0 then
+        MAX_EVENTS = math.floor(val)
+        LimitSetBtn.Text = "OK"
+        task.wait(0.6)
+        LimitSetBtn.Text = "Set"
+    else
+        LimitSetBtn.Text = "Err"
+        task.wait(0.6)
+        LimitSetBtn.Text = "Set"
+    end
+end)
+
+print("[BurpEvent] Monitor Edition loaded.")
